@@ -47,6 +47,16 @@ class ADanteUSCharacter : public ACharacter
 public:
 	ADanteUSCharacter();
 	
+public:
+	// ESTADÍSTICAS DE DANTE
+
+	// Salud actual de Dante (se verá en el Editor)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Atributos")
+	float Salud;
+
+	// Salud máxima permitida
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Atributos")
+	float SaludMaxima;
 
 protected:
 
