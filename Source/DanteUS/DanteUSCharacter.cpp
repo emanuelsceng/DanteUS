@@ -56,6 +56,9 @@ ADanteUSCharacter::ADanteUSCharacter()
 	//vida dante
 	SaludMaxima = 100.0f;
 	Salud = SaludMaxima;
+
+	//DAÑO DE DANTE
+	DanoAtaque = 5.0f; // Los 5 puntos de daño que pide el ingeniero
 }
 
 void ADanteUSCharacter::BeginPlay()

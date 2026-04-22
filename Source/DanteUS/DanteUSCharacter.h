@@ -50,13 +50,18 @@ public:
 public:
 	// ESTADÍSTICAS DE DANTE
 
-	// Salud actual de Dante (se verá en el Editor)
+	// Salud actual de Dante
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Atributos")
 	float Salud;
 
 	// Salud máxima permitida
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Atributos")
 	float SaludMaxima;
+
+	// --- AQUÍ VA EL DAÑO ---
+	// Daño que hace el ataque básico de Dante
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Atributos")
+	float DanoAtaque;
 
 protected:
 
