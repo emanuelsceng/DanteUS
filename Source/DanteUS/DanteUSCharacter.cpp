@@ -135,3 +135,20 @@ void ADanteUSCharacter::Look(const FInputActionValue& Value)
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
+float ADanteUSCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float DamageToApply = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	// Restamos el daño a la salud actual
+	Salud -= DamageToApply;
+
+	// Evitamos que la salud sea menor a 0
+	if (Salud <= 0.0f)
+	{
+		Salud = 0.0f;
+		// Mensaje en la consola de Unreal para avisar que Dante cayó
+		UE_LOG(LogTemplateCharacter, Warning, TEXT("Dante ha muerto"));
+	}
+
+	return DamageToApply;
+}

@@ -62,6 +62,8 @@ public:
 	// Daño que hace el ataque básico de Dante
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Atributos")
 	float DanoAtaque;
+	// Función que se activa cuando Dante recibe cualquier tipo de daño
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 protected:
 
