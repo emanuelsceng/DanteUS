@@ -7,6 +7,7 @@
 #include "Logging/LogMacros.h"
 #include "DanteUSCharacter.generated.h"
 
+
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
