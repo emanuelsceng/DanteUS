@@ -65,6 +65,14 @@ public:
 	// Función que se activa cuando Dante recibe cualquier tipo de daño
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
+	// Función principal de ataque 
+	UFUNCTION(BlueprintCallable, Category = "Dante | Combate")
+	void Atacar();
+
+	// Distancia del ataque lineal (Corte frontal)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Combate")
+	float AlcanceAtaque;
+
 protected:
 
 	/** Called for movement input */

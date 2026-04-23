@@ -10,6 +10,10 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
+#include "EnemyBase.h"
+
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -58,7 +62,9 @@ ADanteUSCharacter::ADanteUSCharacter()
 	Salud = SaludMaxima;
 
 	//DAÑO DE DANTE
-	DanoAtaque = 5.0f; // Los 5 puntos de daño que pide el ingeniero
+	DanoAtaque = 5.0f; // Los 5 puntos de daño lineal de dante
+	AlcanceAtaque = 400.0f; // El largo de tu "espada" o rayo láser invisible
+
 }
 
 void ADanteUSCharacter::BeginPlay()
@@ -151,4 +157,37 @@ float ADanteUSCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	}
 
 	return DamageToApply;
+}
+void ADanteUSCharacter::Atacar()
+{
+	// 1. Calculamos dónde empieza y dónde termina el ataque frontal 
+	FVector Start = GetActorLocation();
+	FVector ForwardVector = GetActorForwardVector();
+	FVector End = Start + (ForwardVector * AlcanceAtaque);
+
+	FHitResult Hit;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this); // Dante no se hace daño a sí mismo
+
+	// 2. Lanzamos el rayo invisible (Ataque Lineal) 
+	bool bHitSomething = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, QueryParams);
+
+	// 3. Dibujamos una línea roja para verificar la precisión del ataque en pantalla 
+	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 1.0f, 0, 2.0f);
+
+	if (bHitSomething)
+	{
+		AActor* HitActor = Hit.GetActor();
+		// 4. ¿Golpeamos a un enemigo?
+		if (HitActor && HitActor->IsA(AEnemyBase::StaticClass()))
+		{
+			// Aplicamos los 5 de daño 
+			UGameplayStatics::ApplyDamage(HitActor, DanoAtaque, GetController(), this, UDamageType::StaticClass());
+
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Orange, TEXT("¡Corte frontal impactado!"));
+			}
+		}
+	}
 }
