@@ -2,6 +2,9 @@
 
 
 #include "EnemyBase.h"
+#include "Perception/PawnSensingComponent.h"
+#include "AIController.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AEnemyBase::AEnemyBase()
@@ -13,6 +16,17 @@ AEnemyBase::AEnemyBase()
 	SaludMaxima = 20.0f; 
 		Salud = SaludMaxima;
 	DanoAtaque = 2.0f; 
+    //distancia del ataque
+    DistanciaAtaque = 150.0f;
+
+
+    // Inicializamos el patrón de estado
+    EstadoActual = EEstadoEnemigo::Inactivo;
+
+    SensorVision = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("SensorVision"));
+    SensorVision->SightRadius = 1500.0f;
+    SensorVision->SetPeripheralVisionAngle(45.0f);
+
 
 }
 
@@ -21,14 +35,94 @@ void AEnemyBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
+
+	// Vinculamos la función AlVerJugador al evento OnSeePawn del SensorVision
+    if (SensorVision)
+    {
+        SensorVision->OnSeePawn.AddDynamic(this, &AEnemyBase::AlVerJugador);
+    }
+
 }
 
-// Called every frame
+
+
+
+// 2. LA MÁQUINA DE ESTADOS EN ACCIÓN
 void AEnemyBase::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+    Super::Tick(DeltaTime);
 
+    // Si está muerto, ignoramos todo (no hace nada)
+    if (EstadoActual == EEstadoEnemigo::Muerto) return;
+
+    // Comportamiento según el estado exacto
+    switch (EstadoActual)
+    {
+    case EEstadoEnemigo::Inactivo:
+        // Aquí el enemigo podría reproducir una animación de respirar o mirar a los lados
+        break;
+
+    case EEstadoEnemigo::Persiguiendo:
+        if (ObjetivoActual)
+        {
+            float DistanciaADante = FVector::Dist(GetActorLocation(), ObjetivoActual->GetActorLocation());
+            AAIController* ControladorIA = Cast<AAIController>(GetController());
+
+            if (DistanciaADante <= DistanciaAtaque)
+            {
+                // Transición de estado: Alcanzamos a Dante
+                EstadoActual = EEstadoEnemigo::Atacando;
+                if (ControladorIA) ControladorIA->StopMovement();
+                AtacarJugador();
+            }
+            else
+            {
+                // Sigue moviéndose hacia Dante
+                if (ControladorIA) ControladorIA->MoveToActor(ObjetivoActual, DistanciaAtaque - 20.0f);
+            }
+        }
+        break;
+
+    case EEstadoEnemigo::Atacando:
+        // En este estado, el enemigo está bloqueado haciendo la animación de ataque.
+        // No persigue ni hace otra cosa hasta que el ataque termine.
+        break;
+    }
 }
+
+void AEnemyBase::AlVerJugador(APawn* JugadorVisto)
+{
+    // Solo reacciona si está inactivo (Patrón Observador)
+    if (EstadoActual == EEstadoEnemigo::Inactivo && JugadorVisto != nullptr)
+    {
+        ObjetivoActual = JugadorVisto;
+        EstadoActual = EEstadoEnemigo::Persiguiendo; // Transición de estado
+    }
+}
+
+void AEnemyBase::AtacarJugador()
+{
+    if (ObjetivoActual)
+    {
+        UGameplayStatics::ApplyDamage(ObjetivoActual, DanoAtaque, GetController(), this, UDamageType::StaticClass());
+    }
+
+    // Cooldown del ataque: Vuelve a perseguir en 1.5 segundos
+    GetWorldTimerManager().SetTimer(TemporizadorAtaque, this, &AEnemyBase::FinalizarAtaque, 1.5f, false);
+}
+
+void AEnemyBase::FinalizarAtaque()
+{
+    // Una vez que termina el golpe, el cerebro vuelve a la fase de persecución
+    if (EstadoActual != EEstadoEnemigo::Muerto)
+    {
+        EstadoActual = EEstadoEnemigo::Persiguiendo;
+    }
+}
+
+
+
+
 
 // Called to bind functionality to input
 void AEnemyBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -44,10 +138,10 @@ float AEnemyBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 
     // Restamos la salud
     Salud -= DamageToApply;
-
-    // Si la salud llega a 0, ejecutamos la muerte
-    if (Salud <= 0.0f)
+    //
+    if (Salud <= 0.0f && EstadoActual != EEstadoEnemigo::Muerto)
     {
+        EstadoActual = EEstadoEnemigo::Muerto; // Transición final
         Morir();
     }
 
