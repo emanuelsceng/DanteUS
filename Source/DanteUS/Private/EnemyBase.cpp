@@ -17,7 +17,7 @@ AEnemyBase::AEnemyBase()
 		Salud = SaludMaxima;
 	DanoAtaque = 2.0f; 
     //distancia del ataque
-    DistanciaAtaque = 150.0f;
+    DistanciaAtaque = 120.0f;
 
 
     // Inicializamos el patrón de estado
@@ -78,7 +78,7 @@ void AEnemyBase::Tick(float DeltaTime)
             else
             {
                 // Sigue moviéndose hacia Dante
-                if (ControladorIA) ControladorIA->MoveToActor(ObjetivoActual, DistanciaAtaque - 20.0f);
+                if (ControladorIA) ControladorIA->MoveToActor(ObjetivoActual, 15.0f);
             }
         }
         break;
