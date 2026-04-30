@@ -7,6 +7,7 @@
 #include "Logging/LogMacros.h"
 #include "DanteUSCharacter.generated.h"
 
+
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
@@ -57,16 +58,16 @@ public:
 	// Salud máxima permitida
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Atributos")
 	float SaludMaxima;
-
+	//
 	// Estado de vida
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Estado")
 	bool bEstaMuerto;
+
 
 	// --- AQUÍ VA EL DAÑO ---
 	// Daño que hace el ataque básico de Dante
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Atributos")
 	float DanoAtaque;
-
 	// Función que se activa cuando Dante recibe cualquier tipo de daño
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -81,6 +82,23 @@ public:
 	// Evento para activar la animación en el Animation Blueprint
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dante | Eventos")
 	void OnDanteDie();
+
+
+	//
+	// Componente de colisión para la espada (La Hitbox)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dante | Combate")
+	class UBoxComponent* EspadaHitbox;
+
+	// Funciones que llamaremos desde las Animaciones (Anim Notifies)
+	UFUNCTION(BlueprintCallable, Category = "Dante | Combate")
+	void ActivarEspada();
+
+	UFUNCTION(BlueprintCallable, Category = "Dante | Combate")
+	void DesactivarEspada();
+
+	// Función que detecta el choque físico
+	UFUNCTION()
+	void AlGolpearEnemigo(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 protected:
 
