@@ -7,7 +7,6 @@
 #include "Logging/LogMacros.h"
 #include "DanteUSCharacter.generated.h"
 
-
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
@@ -16,7 +15,7 @@ struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
-UCLASS(config=Game)
+UCLASS(config = Game)
 class ADanteUSCharacter : public ACharacter
 {
 	GENERATED_BODY()
@@ -28,7 +27,7 @@ class ADanteUSCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-	
+
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
@@ -47,7 +46,7 @@ class ADanteUSCharacter : public ACharacter
 
 public:
 	ADanteUSCharacter();
-	
+
 public:
 	// ESTADÍSTICAS DE DANTE
 
@@ -59,10 +58,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Atributos")
 	float SaludMaxima;
 
+	// Estado de vida
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Estado")
+	bool bEstaMuerto;
+
 	// --- AQUÍ VA EL DAÑO ---
 	// Daño que hace el ataque básico de Dante
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Atributos")
 	float DanoAtaque;
+
 	// Función que se activa cuando Dante recibe cualquier tipo de daño
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -74,6 +78,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Combate")
 	float AlcanceAtaque;
 
+	// Evento para activar la animación en el Animation Blueprint
+	UFUNCTION(BlueprintImplementableEvent, Category = "Dante | Eventos")
+	void OnDanteDie();
+
 protected:
 
 	/** Called for movement input */
@@ -81,12 +89,14 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
-			
+
+	// Lógica interna de muerte
+	void ProcesarMuerte();
 
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
+
 	// To add mapping context
 	virtual void BeginPlay();
 
@@ -96,4 +106,3 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 };
-
