@@ -15,7 +15,7 @@ AEnemyBase::AEnemyBase()
 	// Valores iniciales de salud para "Enemigo Común" 
 	SaludMaxima = 20.0f; 
 		Salud = SaludMaxima;
-	DanoAtaque = 2.0f; 
+	DanoAtaque = 50.0f; 
     //distancia del ataque
     DistanciaAtaque = 120.0f;
 

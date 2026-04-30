@@ -11,9 +11,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Kismet/GameplayStatics.h"
-#include "DrawDebugHelpers.h"
 #include "EnemyBase.h"
-
+#include "Components/BoxComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -24,7 +23,7 @@ ADanteUSCharacter::ADanteUSCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-		
+
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -60,10 +59,19 @@ ADanteUSCharacter::ADanteUSCharacter()
 	//vida dante
 	SaludMaxima = 100.0f;
 	Salud = SaludMaxima;
-
+	bEstaMuerto = false;
 	//DAÑO DE DANTE
 	DanoAtaque = 5.0f; // Los 5 puntos de daño lineal de dante
 	AlcanceAtaque = 400.0f; // El largo de tu "espada" o rayo láser invisible
+
+	// ... dentro del constructor ...
+	EspadaHitbox = CreateDefaultSubobject<UBoxComponent>(TEXT("EspadaHitbox"));
+	// Lo pegamos a la mano derecha (Asegúrate de que el socket se llame igual en tu esqueleto)
+	EspadaHitbox->SetupAttachment(GetMesh(), TEXT("Dante_Sword"));
+	EspadaHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision); // Empieza apagada
+	EspadaHitbox->SetCollisionResponseToAllChannels(ECR_Ignore);
+	EspadaHitbox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // Solo reacciona a enemigos
+
 
 }
 
@@ -71,6 +79,8 @@ void ADanteUSCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	EspadaHitbox->OnComponentBeginOverlap.AddDynamic(this, &ADanteUSCharacter::AlGolpearEnemigo);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -86,10 +96,10 @@ void ADanteUSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-	
+
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
+
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
@@ -108,6 +118,8 @@ void ADanteUSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 void ADanteUSCharacter::Move(const FInputActionValue& Value)
 {
+	// // Si está muerto no se mueve
+	if (bEstaMuerto) return;
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -119,7 +131,7 @@ void ADanteUSCharacter::Move(const FInputActionValue& Value)
 
 		// get forward vector
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	
+
 		// get right vector 
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
@@ -143,6 +155,7 @@ void ADanteUSCharacter::Look(const FInputActionValue& Value)
 }
 float ADanteUSCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	if (bEstaMuerto) return 0.0f;
 	float DamageToApply = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	// Restamos el daño a la salud actual
@@ -153,41 +166,66 @@ float ADanteUSCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	{
 		Salud = 0.0f;
 		// Mensaje en la consola de Unreal para avisar que Dante cayó
-		UE_LOG(LogTemplateCharacter, Warning, TEXT("Dante ha muerto"));
+		ProcesarMuerte();
 	}
 
 	return DamageToApply;
 }
+
+
+// Función que se llama cuando la salud de Dante llega a 0, para manejar la lógica de muerte (desactivar movimiento, entrada, etc)
+void ADanteUSCharacter::ProcesarMuerte()
+{
+	if (bEstaMuerto) return;
+	bEstaMuerto = true;
+
+	UE_LOG(LogTemplateCharacter, Warning, TEXT("Dante ha muerto"));
+
+	// Detenemos el movimiento del CharacterMovementComponent
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+
+	// Desactivamos la entrada del PlayerController
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (PC)
+	{
+		DisableInput(PC);
+	}
+
+	// Llamamos al evento que dispara la animación en el Blueprint
+	OnDanteDie();
+}
+
+
+
 void ADanteUSCharacter::Atacar()
 {
-	// 1. Calculamos dónde empieza y dónde termina el ataque frontal 
-	FVector Start = GetActorLocation();
-	FVector ForwardVector = GetActorForwardVector();
-	FVector End = Start + (ForwardVector * AlcanceAtaque);
 
-	FHitResult Hit;
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this); // Dante no se hace daño a sí mismo
+}
+// Funciones para activar y desactivar la hitbox de la espada, que se llamarán desde los Anim Notifies en las animaciones de ataque
+void ADanteUSCharacter::ActivarEspada()
+{
+	EspadaHitbox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
 
-	// 2. Lanzamos el rayo invisible (Ataque Lineal) 
-	bool bHitSomething = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, QueryParams);
+void ADanteUSCharacter::DesactivarEspada()
+{
+	EspadaHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
 
-	// 3. Dibujamos una línea roja para verificar la precisión del ataque en pantalla 
-	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 1.0f, 0, 2.0f);
-
-	if (bHitSomething)
+void ADanteUSCharacter::AlGolpearEnemigo(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && OtherActor != this && OtherActor->IsA(AEnemyBase::StaticClass()))
 	{
-		AActor* HitActor = Hit.GetActor();
-		// 4. ¿Golpeamos a un enemigo?
-		if (HitActor && HitActor->IsA(AEnemyBase::StaticClass()))
-		{
-			// Aplicamos los 5 de daño 
-			UGameplayStatics::ApplyDamage(HitActor, DanoAtaque, GetController(), this, UDamageType::StaticClass());
+		// Aplicamos el daño general que ya definiste (5.0f)
+		UGameplayStatics::ApplyDamage(OtherActor, DanoAtaque, GetController(), this, UDamageType::StaticClass());
 
-			if (GEngine)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Orange, TEXT("¡Corte frontal impactado!"));
-			}
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, TEXT("¡Hitbox impactada profesionalmente!"));
 		}
+
+		// Apagamos la colisión para no golpear 20 veces en un solo swing
+		DesactivarEspada();
 	}
 }

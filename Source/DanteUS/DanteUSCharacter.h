@@ -16,7 +16,7 @@ struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
-UCLASS(config=Game)
+UCLASS(config = Game)
 class ADanteUSCharacter : public ACharacter
 {
 	GENERATED_BODY()
@@ -28,7 +28,7 @@ class ADanteUSCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-	
+
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
@@ -47,7 +47,7 @@ class ADanteUSCharacter : public ACharacter
 
 public:
 	ADanteUSCharacter();
-	
+
 public:
 	// ESTADÍSTICAS DE DANTE
 
@@ -58,6 +58,11 @@ public:
 	// Salud máxima permitida
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Atributos")
 	float SaludMaxima;
+	//
+	// Estado de vida
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Estado")
+	bool bEstaMuerto;
+
 
 	// --- AQUÍ VA EL DAÑO ---
 	// Daño que hace el ataque básico de Dante
@@ -74,6 +79,27 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Combate")
 	float AlcanceAtaque;
 
+	// Evento para activar la animación en el Animation Blueprint
+	UFUNCTION(BlueprintImplementableEvent, Category = "Dante | Eventos")
+	void OnDanteDie();
+
+
+	//
+	// Componente de colisión para la espada (La Hitbox)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dante | Combate")
+	class UBoxComponent* EspadaHitbox;
+
+	// Funciones que llamaremos desde las Animaciones (Anim Notifies)
+	UFUNCTION(BlueprintCallable, Category = "Dante | Combate")
+	void ActivarEspada();
+
+	UFUNCTION(BlueprintCallable, Category = "Dante | Combate")
+	void DesactivarEspada();
+
+	// Función que detecta el choque físico
+	UFUNCTION()
+	void AlGolpearEnemigo(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 protected:
 
 	/** Called for movement input */
@@ -81,12 +107,14 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
-			
+
+	// Lógica interna de muerte
+	void ProcesarMuerte();
 
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
+
 	// To add mapping context
 	virtual void BeginPlay();
 
@@ -96,4 +124,3 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 };
-
