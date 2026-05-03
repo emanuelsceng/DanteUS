@@ -2,8 +2,7 @@
 
 
 #include "EnemyFactory.h"
-#include "EnemigoCeniza.h" // Incluimos tu clase de soldado explosivo
-//poner los demas enemigos aqui
+
 
 // Sets default values
 AEnemyFactory::AEnemyFactory()
@@ -30,42 +29,32 @@ void AEnemyFactory::Tick(float DeltaTime)
 
 
 //
-AEnemyBase* AEnemyFactory::CrearEnemigo(UObject* Contexto, ETipoEnemigo Tipo, FVector Posicion, FRotator Rotacion)
+AEnemyBase* AEnemyFactory::CrearEnemigo(UWorld* Mundo, ETipoEnemigo Tipo, FVector Posicion, FRotator Rotacion)
 {
-	// 3. VALIDACIÓN: Verificamos que el contexto (el mundo) sea válido para evitar crasheos
-	if (!Contexto) return nullptr;
+    if (!Mundo) return nullptr;
 
-	UWorld* Mundo = Contexto->GetWorld();
-	if (!Mundo) return nullptr;
+    UClass* ClaseParaSpawnear = nullptr;
 
-	AEnemyBase* NuevoEnemigo = nullptr;
+    // El switch que el ingeniero espera ver
+    switch (Tipo)
+    {
+    case ETipoEnemigo::Ceniza:
+        // IMPORTANTE: Verifica que esta ruta sea la correcta en tu Content Browser
+        ClaseParaSpawnear = LoadClass<AEnemyBase>(nullptr, TEXT("/Game/ThirdPerson/Blueprints/Enemies/Nivel1_Guerra/BP_EnemigoCeniza.BP_EnemigoCeniza_C"));
+        break;
 
-	// Configuración de Spawn: Ajusta la posición si hay colisiones para que no aparezcan dentro de paredes
-	FActorSpawnParameters Params;
-	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+    case ETipoEnemigo::Peste_Escupidor:
+        // Aquí pondrías la ruta del siguiente enemigo cuando lo tengas
+        break;
+    }
 
-	// 4. EL SELECTOR (Corazón del Factory): El switch decide qué "Producto" fabricar[cite: 1]
-	switch (Tipo)
-	{
-	case ETipoEnemigo::Ceniza:
-		// Fabricamos un Soldado de Ceniza
-		NuevoEnemigo = Mundo->SpawnActor<AEnemigoCeniza>(AEnemigoCeniza::StaticClass(), Posicion, Rotacion, Params);
-		break;
+    if (ClaseParaSpawnear)
+    {
+        FActorSpawnParameters Params;
+        Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-	case ETipoEnemigo::Peste_Escupidor:
-		// Aquí su código de creación para el Nivel 2
-		break;
+        return Mundo->SpawnActor<AEnemyBase>(ClaseParaSpawnear, Posicion, Rotacion, Params);
+    }
 
-	case ETipoEnemigo::Vampirico:
-		// Aquí su código de creación para el Nivel 3
-		break;
-
-	case ETipoEnemigo::Fantasma:
-		// Aquí su código de creación para el Nivel 4
-		break;
-	}
-
-	// 5. RETORNO: Devolvemos el enemigo creado para que quien lo pidió pueda usarlo
-	return NuevoEnemigo;
+    return nullptr;
 }
-

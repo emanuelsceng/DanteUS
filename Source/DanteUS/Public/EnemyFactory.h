@@ -32,7 +32,7 @@ public:
 	 * parte del código sin necesidad de buscar una instancia de la fábrica en el mapa.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dante | Factory")
-	static AEnemyBase* CrearEnemigo(UObject* Contexto, ETipoEnemigo Tipo, FVector Posicion, FRotator Rotacion);
+	static AEnemyBase* CrearEnemigo(UWorld* Mundo, ETipoEnemigo Tipo, FVector Posicion, FRotator Rotacion);
 
 protected:
 	// Called when the game starts or when spawned
