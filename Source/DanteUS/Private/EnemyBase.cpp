@@ -16,6 +16,9 @@ AEnemyBase::AEnemyBase()
 	SaludMaxima = 20.0f; 
 		Salud = SaludMaxima;
 	DanoAtaque = 10.0f; 
+
+	DanoAtaque = 2.0f; 
+
     //distancia del ataque
     DistanciaAtaque = 120.0f;
 
