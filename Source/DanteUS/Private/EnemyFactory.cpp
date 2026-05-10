@@ -2,6 +2,9 @@
 
 
 #include "EnemyFactory.h"
+#include "SiervoVampirico.h"
+#include "AcechadorSanguinario.h"
+#include "GuardianVampirico.h"
 
 
 // Sets default values
@@ -35,7 +38,6 @@ AEnemyBase* AEnemyFactory::CrearEnemigo(UWorld* Mundo, ETipoEnemigo Tipo, FVecto
 
     UClass* ClaseParaSpawnear = nullptr;
 
-    // El switch que el ingeniero espera ver
     switch (Tipo)
     {
     case ETipoEnemigo::Ceniza:
@@ -45,6 +47,20 @@ AEnemyBase* AEnemyFactory::CrearEnemigo(UWorld* Mundo, ETipoEnemigo Tipo, FVecto
 
     case ETipoEnemigo::Peste_Escupidor:
         // Aquí pondrías la ruta del siguiente enemigo cuando lo tengas
+        break;
+    case ETipoEnemigo::Vampirico_Siervo:
+        ClaseParaSpawnear = LoadClass<AEnemyBase>(nullptr,
+            TEXT("/Game/ThirdPerson/Blueprints/Enemies/Nivel3_Hambre/BP_SiervoVampirico.BP_SiervoVampirico_C"));
+        break;
+
+    case ETipoEnemigo::Vampirico_Acechador:
+        ClaseParaSpawnear = LoadClass<AEnemyBase>(nullptr,
+            TEXT("/Game/ThirdPerson/Blueprints/Enemies/Nivel3_Hambre/BP_AcechadorSanguinario.BP_AcechadorSanguinario_C"));
+        break;
+
+    case ETipoEnemigo::Vampirico_Guardian:
+        ClaseParaSpawnear = LoadClass<AEnemyBase>(nullptr,
+            TEXT("/Game/ThirdPerson/Blueprints/Enemies/Nivel3_Hambre/BP_GuardianVampirico.BP_GuardianVampirico_C"));
         break;
     }
 

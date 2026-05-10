@@ -15,7 +15,9 @@ enum class ETipoEnemigo : uint8
 	Ceniza              UMETA(DisplayName = "Soldado de Ceniza (Nivel 1)"),
 	Peste_Escupidor     UMETA(DisplayName = "Escupidor (Nivel 2)"),
 	Peste_Pustulento    UMETA(DisplayName = "Pustulento (Nivel 2)"),
-	Vampirico           UMETA(DisplayName = "Entidad Vampirica (Nivel 3)"),
+	Vampirico_Siervo     UMETA(DisplayName = "Siervo Vampirico (Nivel 3)"),
+	Vampirico_Acechador  UMETA(DisplayName = "Acechador Sanguinario (Nivel 3)"),
+	Vampirico_Guardian   UMETA(DisplayName = "Guardian Vampirico (Nivel 3)"),
 	Fantasma            UMETA(DisplayName = "Fantasma Errante (Nivel 4)")
 };
 
