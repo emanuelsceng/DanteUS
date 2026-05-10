@@ -4,7 +4,6 @@
 #include "GameFramework/Actor.h"
 #include "ProyectilBase.generated.h"
 
-// Forward declarations para compilar más rápido
 class USphereComponent;
 class UProjectileMovementComponent;
 
@@ -16,22 +15,24 @@ class DANTEUS_API AProyectilBase : public AActor
 public:
 	AProyectilBase();
 
-	// 1. LA FÍSICA: La caja de colisión (Esfera) que detectará los impactos
+	// 1. LA BASE MATEMÁTICA (Lo que todo proyectil en el juego necesita)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
-	USphereComponent* EsferaColision;
+	USphereComponent* Colision;
 
-	// 2. EL MOTOR: Este componente de Unreal calcula la velocidad, rebotes y gravedad
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
-	UProjectileMovementComponent* ComponenteMovimiento;
+	UProjectileMovementComponent* Movimiento;
 
-	// 3. DISEÑO ORIENTADO A DATOS: Variable expuesta para que cada nivel ponga su propio daño
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Estadisticas")
-	float DanoProyectil;
+	// 2. EL DATO VARIABLE (Lo que cada compañero cambiará en su nivel)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Configuracion")
+	float DanoAtaque;
 
-	// Función que actúa como "Sensor" cuando la bola choca contra algo
+	// 3. LA FLEXIBILIDAD (¡El truco para tu defensa!)
+	// Esta función NO se programa en C++, se programa en el Blueprint visual.
+	// Permite que cada proyectil haga algo distinto al chocar (sonidos, partículas, charcos de ácido).
+	UFUNCTION(BlueprintImplementableEvent, Category = "Eventos")
+	void AlImpactarEfectosVisuales();
+
+	// La función matemática interna de C++
 	UFUNCTION()
 	void AlChocar(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
-protected:
-	virtual void BeginPlay() override;
 };

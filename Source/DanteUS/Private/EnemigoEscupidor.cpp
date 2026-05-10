@@ -1,40 +1,50 @@
 #include "EnemigoEscupidor.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
+#include "Kismet/GameplayStatics.h" // Necesario para buscar a Dante
 
 AEnemigoEscupidor::AEnemigoEscupidor()
 {
-	// Configuramos las estadísticas para este tirador
-	SaludMaxima = 20.0f; // Sigue siendo enemigo común de la horda
-	Salud = SaludMaxima;
-
-	DanoAtaque = 3.0f; // Las bolas de vómito quitan 3 de daño
-
-	// ¡OJO AQUÍ! Cambiamos la distancia. 
-	// Como ataca de lejos, su distancia de ataque es mucho mayor (800 unidades)
-	DistanciaAtaque = 800.0f;
+    SaludMaxima = 15.0f; // Cañón de cristal: menos vida que el zombie común
+    Salud = SaludMaxima;
+    DanoAtaque = 3.0f;
+    DistanciaAtaque = 1500.0f; // ¡Aumento masivo de distancia!
 }
-
 void AEnemigoEscupidor::AtacarJugador()
 {
-	// NOTA IMPORTANTE: Aquí NO ponemos "Super::AtacarJugador();".
-	// Si lo pusiéramos, ejecutaría el golpe cuerpo a cuerpo de la clase base.
-	// Al no ponerlo, estamos reemplazando el ataque físico por completo.
+    // Verificamos que el Blueprint tenga un proyectil asignado
+    if (ClaseProyectilVomito)
+    {
+        // 1. Declaramos las variables de posición
+        FVector UbicacionCentro = GetActorLocation();
+        FVector HaciaAdelante = GetActorForwardVector();
 
-	if (ClaseProyectilVomito && ObjetivoActual)
-	{
-		// 1. Calculamos desde dónde sale el disparo (un poco adelante de su cara)
-		FVector PosicionDisparo = GetActorLocation() + (GetActorForwardVector() * 80.0f);
+        // 2. Calculamos el punto de origen de la bala desplazado hacia adelante
+        FVector PuntoDeDisparo = UbicacionCentro + (HaciaAdelante * 100.0f) + FVector(0.0f, 0.0f, 50.0f);
 
-		// 2. Apuntamos hacia donde está mirando el enemigo
-		FRotator RotacionDisparo = GetActorRotation();
+        // 3. Buscamos a Dante en el nivel
+        ACharacter* Dante = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+        FRotator RotacionDisparo = GetActorRotation(); // Rotación por defecto de seguridad
 
-		// 3. Instanciamos el proyectil en el mundo
-		GetWorld()->SpawnActor<AActor>(ClaseProyectilVomito, PosicionDisparo, RotacionDisparo);
+        // 4. Si Dante existe, calculamos la puntería exacta (Pitch y Yaw)
+        if (Dante)
+        {
+            FVector UbicacionDante = Dante->GetActorLocation();
+            RotacionDisparo = (UbicacionDante - PuntoDeDisparo).Rotation();
+        }
 
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, TEXT("¡El Escupidor lanzó vómito!"));
-	}
+        // 5. Instanciamos el proyectil
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.Owner = this;
+        SpawnParams.Instigator = GetInstigator();
 
-	// Reutilizamos el temporizador heredado para el tiempo de recarga (cooldown) del disparo
-	GetWorldTimerManager().SetTimer(TemporizadorAtaque, this, &AEnemyBase::FinalizarAtaque, 2.0f, false);
+        GetWorld()->SpawnActor<AActor>(ClaseProyectilVomito, PuntoDeDisparo, RotacionDisparo, SpawnParams);
+    }
+
+    // -------------------------------------------------------------------------
+    // LA SOLUCIÓN MÁGICA DE LA MÁQUINA DE ESTADOS
+    // Usamos el temporizador de la clase padre para llamar a FinalizarAtaque.
+    // Le puse 2.0 segundos de recarga porque el Escupidor ataca a distancia.
+    // -------------------------------------------------------------------------
+    GetWorldTimerManager().SetTimer(TemporizadorAtaque, this, &AEnemyBase::FinalizarAtaque, 5.0f, false);
 }
