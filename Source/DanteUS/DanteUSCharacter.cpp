@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "DanteUSCharacter.h"
+#include "UIManagerFacade.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -80,6 +81,18 @@ void ADanteUSCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
+	//  Buscamos automáticamente el facade de UI en el mundo
+	AActor* FachadaEncontrada = UGameplayStatics::GetActorOfClass(GetWorld(), AUIManagerFacade::StaticClass());
+
+	if (FachadaEncontrada)
+	{
+		// Si la encuentra, la guardamos en nuestra variable
+		UIFacade = Cast<AUIManagerFacade>(FachadaEncontrada);
+
+		//  Le avisamos que acabamos de nacer para que pinte la barra verde al 100%
+		UIFacade->ActualizarBarraVida(Salud, SaludMaxima);
+	}
+	//
 	EspadaHitbox->OnComponentBeginOverlap.AddDynamic(this, &ADanteUSCharacter::AlGolpearEnemigo);
 }
 
@@ -160,11 +173,24 @@ float ADanteUSCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 
 	// Restamos el daño a la salud actual
 	Salud -= DamageToApply;
+	//
+	// aqui entra el facade Le avisamos que actualice la barra
+	if (UIFacade)
+	{
+		UIFacade->ActualizarBarraVida(Salud, SaludMaxima);
+	}
 
 	// Evitamos que la salud sea menor a 0
 	if (Salud <= 0.0f)
 	{
 		Salud = 0.0f;
+
+		// Le avisamos a la fachada que ponga la pantalla de Game Over
+		if (UIFacade)
+		{
+			UIFacade->MostrarPantallaMuerte();
+		}
+
 		// Mensaje en la consola de Unreal para avisar que Dante cayó
 		ProcesarMuerte();
 	}

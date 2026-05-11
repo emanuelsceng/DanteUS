@@ -21,11 +21,11 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-    // 1. La "zona invisible" que detecta a Dante
+    //  La "zona invisible" que detecta a Dante
     UPROPERTY(VisibleAnywhere, Category = "Spawner")
     UBoxComponent* ZonaActivacion;
 
-    // 2. Variables configurables en el editor (Nivel 1, Nivel 2, etc.)
+    // Variables configurables en el editor (Nivel 1, Nivel 2, etc.)
     UPROPERTY(EditAnywhere, Category = "Spawner")
     ETipoEnemigo TipoA_Spawnear;
 
