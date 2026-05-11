@@ -41,12 +41,12 @@ AEnemyBase* AEnemyFactory::CrearEnemigo(UWorld* Mundo, ETipoEnemigo Tipo, FVecto
     switch (Tipo)
     {
     case ETipoEnemigo::Ceniza:
-        // IMPORTANTE: Verifica que esta ruta sea la correcta en tu Content Browser
+        // Verifica que esta ruta sea la correcta en el Content Browser
         ClaseParaSpawnear = LoadClass<AEnemyBase>(nullptr, TEXT("/Game/ThirdPerson/Blueprints/Enemies/Nivel1_Guerra/BP_EnemigoCeniza.BP_EnemigoCeniza_C"));
         break;
 
     case ETipoEnemigo::Peste_Escupidor:
-        // Aquí pondrías la ruta del siguiente enemigo cuando lo tengas
+        // Aquí ponemos la ruta del siguiente enemigo cuando lo tengas
         break;
     case ETipoEnemigo::Vampirico_Siervo:
         ClaseParaSpawnear = LoadClass<AEnemyBase>(nullptr,

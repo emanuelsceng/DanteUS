@@ -63,6 +63,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Estado")
 	bool bEstaMuerto;
 
+	// REFERENCIA Al facade DE UI
+	// Usamos forward declaration con "class" para no incluir el .h completo aquí
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | UI")
+	class AUIManagerFacade* UIFacade;
 
 	// --- AQUÍ VA EL DAÑO ---
 	// Daño que hace el ataque básico de Dante

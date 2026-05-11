@@ -93,9 +93,10 @@ void AEnemyBase::Tick(float DeltaTime)
     }
 }
 
+
 void AEnemyBase::AlVerJugador(APawn* JugadorVisto)
 {
-    // Solo reacciona si está inactivo (Patrón Observador)
+    // Solo reacciona si está inactivo (Patrón Observer)
     if (EstadoActual == EEstadoEnemigo::Inactivo && JugadorVisto != nullptr)
     {
         ObjetivoActual = JugadorVisto;
