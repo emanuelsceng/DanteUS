@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "DanteUSCharacter.h"
-#include "UIManagerFacade.h"
+#include "UIManagerFacade.h" 
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -65,7 +65,7 @@ ADanteUSCharacter::ADanteUSCharacter()
 	DanoAtaque = 5.0f; // Los 5 puntos de daño lineal de dante
 	AlcanceAtaque = 400.0f; // El largo de tu "espada" o rayo láser invisible
 
-	// ... dentro del constructor ...
+	//  dentro del constructor
 	EspadaHitbox = CreateDefaultSubobject<UBoxComponent>(TEXT("EspadaHitbox"));
 	// Lo pegamos a la mano derecha (Asegúrate de que el socket se llame igual en tu esqueleto)
 	EspadaHitbox->SetupAttachment(GetMesh(), TEXT("Dante_Sword"));
@@ -248,7 +248,7 @@ void ADanteUSCharacter::AlGolpearEnemigo(UPrimitiveComponent* OverlappedComponen
 
 		if (GEngine)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, TEXT("¡Hitbox impactada profesionalmente!"));
+			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, TEXT("Hitbox impactada"));
 		}
 
 		// Apagamos la colisión para no golpear 20 veces en un solo swing

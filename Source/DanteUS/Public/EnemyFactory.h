@@ -13,6 +13,7 @@ UENUM(BlueprintType)
 enum class ETipoEnemigo : uint8
 {
 	Ceniza              UMETA(DisplayName = "Soldado de Ceniza (Nivel 1)"),
+	MiniBoss_Guerra     UMETA(DisplayName = "Mini-Boss: Comandante de Guerra"),
 	Peste_Escupidor     UMETA(DisplayName = "Escupidor (Nivel 2)"),
 	Peste_Pustulento    UMETA(DisplayName = "Pustulento (Nivel 2)"),
 	Vampirico_Siervo     UMETA(DisplayName = "Siervo Vampirico (Nivel 3)"),
@@ -45,3 +46,5 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 };
+
+
