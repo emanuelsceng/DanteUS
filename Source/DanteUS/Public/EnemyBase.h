@@ -37,8 +37,6 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dante | IA")
     EEstadoEnemigo EstadoActual;
 
-
-public:
     // Salud actual del enemigo
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Enemigo")
     float Salud;
@@ -57,6 +55,11 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | IA")
     float DistanciaAtaque;
+
+    // Referencia a la animación de ataque
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | IA")
+    class UAnimMontage* MontageAtaque;
+
 
     APawn* ObjetivoActual;
 
