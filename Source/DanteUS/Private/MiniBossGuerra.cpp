@@ -19,6 +19,7 @@ AMiniBossGuerra::AMiniBossGuerra()
 	TiempoRecuperacion = 2.0f;
 
 	bEstaRecuperandose = false;
+	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
 }
 
 // ---------------------------------------------------------
@@ -28,6 +29,13 @@ void AMiniBossGuerra::AtacarJugador()
 {
 	if (ContadorAtaques < 2)
 	{
+
+		// REPRODUCIR ANIMACIÓN VISUAL
+		if (MontageAtaque) // Variable heredada de EnemyBase
+		{
+			PlayAnimMontage(MontageAtaque);
+		}
+
 		// 1. ATAQUE COMÚN (Golpe de Maza)
 		if (ObjetivoActual)
 		{
