@@ -63,6 +63,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Estado")
 	bool bEstaMuerto;
 
+
+	// Indica si Dante está en medio de una animación de ataque
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dante | Estado")
+	bool bEstaAtacando;
+	// Función para desbloquear el movimiento al terminar la animación
+	UFUNCTION(BlueprintCallable, Category = "Dante | Combate")
+	void FinalizarAtaque();
+
+
 	// REFERENCIA Al facade DE UI
 	// Usamos forward declaration con "class" para no incluir el .h completo aquí
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | UI")
