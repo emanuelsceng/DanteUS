@@ -78,6 +78,9 @@ public:
 	// Función principal de ataque 
 	UFUNCTION(BlueprintCallable, Category = "Dante | Combate")
 	void Atacar();
+	//Variable para guardar la animación del ataque 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Combate")
+	UAnimMontage* MontageAtaque;
 
 	// Distancia del ataque lineal (Corte frontal)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Combate")

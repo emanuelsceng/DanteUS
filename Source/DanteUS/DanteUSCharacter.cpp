@@ -226,7 +226,14 @@ void ADanteUSCharacter::ProcesarMuerte()
 
 void ADanteUSCharacter::Atacar()
 {
+	// 1. Si está muerto, bloqueamos el ataque para que no golpee desde el suelo
+	if (bEstaMuerto) return;
 
+	// 2. Si asignamos un Montage en el Blueprint, lo reproducimos
+	if (MontageAtaque)
+	{
+		PlayAnimMontage(MontageAtaque);
+	}
 }
 // Funciones para activar y desactivar la hitbox de la espada, que se llamarán desde los Anim Notifies en las animaciones de ataque
 void ADanteUSCharacter::ActivarEspada()
