@@ -36,7 +36,7 @@ ADanteUSCharacter::ADanteUSCharacter()
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
-	GetCharacterMovement()->JumpZVelocity = 700.f;
+	GetCharacterMovement()->JumpZVelocity = 500.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
@@ -61,6 +61,8 @@ ADanteUSCharacter::ADanteUSCharacter()
 	SaludMaxima = 100.0f;
 	Salud = SaludMaxima;
 	bEstaMuerto = false;
+	
+	bEstaAtacando = false;
 	//DAÑO DE DANTE
 	DanoAtaque = 5.0f; // Los 5 puntos de daño lineal de dante
 	AlcanceAtaque = 400.0f; // El largo de tu "espada" o rayo láser invisible
@@ -131,8 +133,8 @@ void ADanteUSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 void ADanteUSCharacter::Move(const FInputActionValue& Value)
 {
-	// // Si está muerto no se mueve
-	if (bEstaMuerto) return;
+	// Si está muerto O está atacando, ignoramos el teclado/mando
+	if (bEstaMuerto || bEstaAtacando) return;
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -226,8 +228,25 @@ void ADanteUSCharacter::ProcesarMuerte()
 
 void ADanteUSCharacter::Atacar()
 {
+	// 1. Si está muerto o YA está atacando, no hacemos nada
+	if (bEstaMuerto || bEstaAtacando) return;
 
+	// 2. Cerramos el candado de movimiento
+	bEstaAtacando = true;
+
+	// 3. Reproducimos la animación
+	if (MontageAtaque)
+	{
+		PlayAnimMontage(MontageAtaque);
+	}
 }
+
+void ADanteUSCharacter::FinalizarAtaque()
+{
+	// Abrimos el candado para que Dante pueda volver a caminar
+	bEstaAtacando = false;
+}
+
 // Funciones para activar y desactivar la hitbox de la espada, que se llamarán desde los Anim Notifies en las animaciones de ataque
 void ADanteUSCharacter::ActivarEspada()
 {

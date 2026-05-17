@@ -63,6 +63,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Estado")
 	bool bEstaMuerto;
 
+
+	// Indica si Dante está en medio de una animación de ataque
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dante | Estado")
+	bool bEstaAtacando;
+	// Función para desbloquear el movimiento al terminar la animación
+	UFUNCTION(BlueprintCallable, Category = "Dante | Combate")
+	void FinalizarAtaque();
+
+
 	// REFERENCIA Al facade DE UI
 	// Usamos forward declaration con "class" para no incluir el .h completo aquí
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | UI")
@@ -78,6 +87,9 @@ public:
 	// Función principal de ataque 
 	UFUNCTION(BlueprintCallable, Category = "Dante | Combate")
 	void Atacar();
+	//Variable para guardar la animación del ataque 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Combate")
+	UAnimMontage* MontageAtaque;
 
 	// Distancia del ataque lineal (Corte frontal)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Combate")
