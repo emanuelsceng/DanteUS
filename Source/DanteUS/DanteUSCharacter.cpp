@@ -36,7 +36,7 @@ ADanteUSCharacter::ADanteUSCharacter()
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
-	GetCharacterMovement()->JumpZVelocity = 500.f;
+	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
@@ -116,7 +116,7 @@ void ADanteUSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 
 		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ADanteUSCharacter::Saltar);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		// Moving
@@ -273,4 +273,15 @@ void ADanteUSCharacter::AlGolpearEnemigo(UPrimitiveComponent* OverlappedComponen
 		// Apagamos la colisión para no golpear 20 veces en un solo swing
 		DesactivarEspada();
 	}
+}
+void ADanteUSCharacter::Saltar()
+{
+	// Si está muerto o ya está atacando, bloqueamos el salto
+	if (bEstaMuerto || bEstaAtacando) return;
+
+	// Si el componente de movimiento dice que YA está en el aire (IsFalling), bloqueamos el spam
+	if (GetCharacterMovement() && GetCharacterMovement()->IsFalling()) return;
+
+	// Si pasa todas las pruebas, permitimos el salto físico de Unreal
+	Jump();
 }

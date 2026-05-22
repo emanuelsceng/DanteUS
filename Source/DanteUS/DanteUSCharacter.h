@@ -124,6 +124,8 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
+	void Saltar();
+
 	// Lógica interna de muerte
 	void ProcesarMuerte();
 
