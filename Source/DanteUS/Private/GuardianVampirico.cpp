@@ -12,12 +12,12 @@ AGuardianVampirico::AGuardianVampirico()
     // Según el documento Nivel 3:
 
     // El Guardián tiene 20 HP igual que los demás comunes
-    SaludMaxima = 20.0f;
+    SaludMaxima = 30.0f;
     Salud = SaludMaxima;
 
     // Es el MÁS FUERTE de los comunes: 10 de daño por golpe
     // Dante necesita 2 ataques para matarlo (Dante hace 5 dmg)
-    DanoAtaque = 10.0f;
+    DanoAtaque = 5.0f;
 
     // Distancia de ataque cuerpo a cuerpo
     DistanciaAtaque = 120.0f;
@@ -45,7 +45,8 @@ void AGuardianVampirico::AtacarJugador()
     // FMath::Clamp evita que la salud supere el máximo permitido
     Salud = FMath::Clamp(Salud + RegeneracionPorGolpe, 0.0f, SaludMaxima);
 
-    UE_LOG(LogTemp, Log,
-        TEXT("GuardianVampirico: Ataco y regenero %.1f HP. Salud actual: %.1f"),
-        RegeneracionPorGolpe, Salud);
+    if (GEngine)
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Purple, TEXT("¡Guardián Vampírico conectó un golpe pesado!"));
+    }
 }

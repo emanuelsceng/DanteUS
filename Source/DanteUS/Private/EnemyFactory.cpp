@@ -5,6 +5,7 @@
 #include "SiervoVampirico.h"
 #include "AcechadorSanguinario.h"
 #include "GuardianVampirico.h"
+#include "MiniBossHambre.h"
 
 
 // Sets default values
@@ -61,6 +62,10 @@ AEnemyBase* AEnemyFactory::CrearEnemigo(UWorld* Mundo, ETipoEnemigo Tipo, FVecto
     case ETipoEnemigo::Vampirico_Guardian:
         ClaseParaSpawnear = LoadClass<AEnemyBase>(nullptr,
             TEXT("/Game/ThirdPerson/Blueprints/Enemies/Nivel3_Hambre/BP_GuardianVampirico.BP_GuardianVampirico_C"));
+        break;
+    case ETipoEnemigo::MiniBoss_Hambre:
+        ClaseParaSpawnear = LoadClass<AEnemyBase>(nullptr,
+            TEXT("/Game/ThirdPerson/Blueprints/Enemies/Nivel3_Hambre/BP_MiniBossHambre.BP_MiniBossHambre_C"));
         break;
     }
 
