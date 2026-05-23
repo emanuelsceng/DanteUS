@@ -67,3 +67,4 @@ void AFantasmaErrante::RestaurarVulnerabilidad()
 {
 	bEsInvulnerable = false;
 	OnInvulnerabilidadTerminada();// Se llama justo cuando bEsInvulnerable es true
+}
