@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "DanteUSCharacter.h"
-#include "UIManagerFacade.h"
+#include "UIManagerFacade.h" 
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -61,11 +61,13 @@ ADanteUSCharacter::ADanteUSCharacter()
 	SaludMaxima = 100.0f;
 	Salud = SaludMaxima;
 	bEstaMuerto = false;
+	
+	bEstaAtacando = false;
 	//DAÑO DE DANTE
 	DanoAtaque = 5.0f; // Los 5 puntos de daño lineal de dante
 	AlcanceAtaque = 400.0f; // El largo de tu "espada" o rayo láser invisible
 
-	// ... dentro del constructor ...
+	//  dentro del constructor
 	EspadaHitbox = CreateDefaultSubobject<UBoxComponent>(TEXT("EspadaHitbox"));
 	// Lo pegamos a la mano derecha (Asegúrate de que el socket se llame igual en tu esqueleto)
 	EspadaHitbox->SetupAttachment(GetMesh(), TEXT("Dante_Sword"));
@@ -114,7 +116,7 @@ void ADanteUSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 
 		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ADanteUSCharacter::Saltar);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		// Moving
@@ -131,8 +133,8 @@ void ADanteUSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 void ADanteUSCharacter::Move(const FInputActionValue& Value)
 {
-	// // Si está muerto no se mueve
-	if (bEstaMuerto) return;
+	// Si está muerto O está atacando, ignoramos el teclado/mando
+	if (bEstaMuerto || bEstaAtacando) return;
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -226,8 +228,25 @@ void ADanteUSCharacter::ProcesarMuerte()
 
 void ADanteUSCharacter::Atacar()
 {
+	// 1. Si está muerto o YA está atacando, no hacemos nada
+	if (bEstaMuerto || bEstaAtacando) return;
 
+	// 2. Cerramos el candado de movimiento
+	bEstaAtacando = true;
+
+	// 3. Reproducimos la animación
+	if (MontageAtaque)
+	{
+		PlayAnimMontage(MontageAtaque);
+	}
 }
+
+void ADanteUSCharacter::FinalizarAtaque()
+{
+	// Abrimos el candado para que Dante pueda volver a caminar
+	bEstaAtacando = false;
+}
+
 // Funciones para activar y desactivar la hitbox de la espada, que se llamarán desde los Anim Notifies en las animaciones de ataque
 void ADanteUSCharacter::ActivarEspada()
 {
@@ -248,10 +267,21 @@ void ADanteUSCharacter::AlGolpearEnemigo(UPrimitiveComponent* OverlappedComponen
 
 		if (GEngine)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, TEXT("¡Hitbox impactada profesionalmente!"));
+			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, TEXT("Hitbox impactada"));
 		}
 
 		// Apagamos la colisión para no golpear 20 veces en un solo swing
 		DesactivarEspada();
 	}
+}
+void ADanteUSCharacter::Saltar()
+{
+	// Si está muerto o ya está atacando, bloqueamos el salto
+	if (bEstaMuerto || bEstaAtacando) return;
+
+	// Si el componente de movimiento dice que YA está en el aire (IsFalling), bloqueamos el spam
+	if (GetCharacterMovement() && GetCharacterMovement()->IsFalling()) return;
+
+	// Si pasa todas las pruebas, permitimos el salto físico de Unreal
+	Jump();
 }

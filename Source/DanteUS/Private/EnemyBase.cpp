@@ -106,10 +106,18 @@ void AEnemyBase::AlVerJugador(APawn* JugadorVisto)
 
 void AEnemyBase::AtacarJugador()
 {
+
+    // Reproducimos el montaje de ataque
+    if (MontageAtaque)
+    {
+        PlayAnimMontage(MontageAtaque);
+    }
+
     if (ObjetivoActual)
     {
         UGameplayStatics::ApplyDamage(ObjetivoActual, DanoAtaque, GetController(), this, UDamageType::StaticClass());
     }
+
 
     // Cooldown del ataque: Vuelve a perseguir en 1.5 segundos
     GetWorldTimerManager().SetTimer(TemporizadorAtaque, this, &AEnemyBase::FinalizarAtaque, 1.5f, false);

@@ -45,6 +45,14 @@ AEnemyBase* AEnemyFactory::CrearEnemigo(UWorld* Mundo, ETipoEnemigo Tipo, FVecto
         ClaseParaSpawnear = LoadClass<AEnemyBase>(nullptr, TEXT("/Game/ThirdPerson/Blueprints/Enemies/Nivel1_Guerra/BP_EnemigoCeniza.BP_EnemigoCeniza_C"));
         break;
 
+        //EL MINI-BOSS
+    case ETipoEnemigo::MiniBoss_Guerra:
+        // NOTA: Asegúrate de que esta ruta coincida exactamente con la ubicación de tu BP en el editor.
+        // Recuerda que la sintaxis de LoadClass SIEMPRE exige terminar el nombre con "_C".
+        ClaseParaSpawnear = LoadClass<AEnemyBase>(nullptr, TEXT("/Game/ThirdPerson/Blueprints/Enemies/Nivel1_Guerra/BP_MiniBossGuerra.BP_MiniBossGuerra_C"));
+        break;
+
+
     case ETipoEnemigo::Peste_Escupidor:
         // Aquí ponemos la ruta del siguiente enemigo cuando lo tengas
         break;

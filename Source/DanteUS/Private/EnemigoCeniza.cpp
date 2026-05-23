@@ -11,6 +11,8 @@ AEnemigoCeniza::AEnemigoCeniza()
 	Salud = SaludMaxima;
 	DanoAtaque = 2.0f; // Los soldados de ceniza quitan 2 de vida
 }
+
+// super::Beginplay
 // Sobrescribimos la función de morir para que ejecute la explosión después de 2 segundos
 void AEnemigoCeniza::Morir()
 {
