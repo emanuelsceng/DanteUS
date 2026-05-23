@@ -10,7 +10,10 @@
 #include "GameFramework/Actor.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
 #include "ProyectilPocion.generated.h"
+
 
 UCLASS()
 class DANTEUS_API AProyectilPocion : public AActor
@@ -48,6 +51,10 @@ public:
     // Clase de ZonaCongelada a spawnear al impactar
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante|Proyectil|Stats")
     TSubclassOf<AActor> ClaseZonaCongelada;
+
+    // Efecto de escarcha al impactar (asignar NS_Basic_7 desde el editor)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante|Proyectil|Stats")
+    UNiagaraSystem* EfectoImpacto;
 
     // Se llama cuando el proyectil se superpone con algo (Overlap)
     UFUNCTION()

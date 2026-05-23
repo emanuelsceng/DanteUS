@@ -5,6 +5,7 @@
 // Implementación del Mini-Boss del Sello del Hambre
 
 #include "MiniBossHambre.h"
+#include "Animation/AnimInstance.h"
 #include "AIController.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -44,6 +45,13 @@ void AMiniBossHambre::BeginPlay()
     if (Dante)
     {
         ObjetivoActual = Dante;
+
+    }
+    // Animacion de aparicion al iniciar
+    UAnimInstance* AnimInstancia = GetMesh()->GetAnimInstance();
+    if (AnimInstancia && MontajeAparicion)
+    {
+        AnimInstancia->Montage_Play(MontajeAparicion);
     }
 }
 
@@ -103,9 +111,29 @@ void AMiniBossHambre::ActualizarMovimiento(float DeltaTime)
 
 void AMiniBossHambre::AtacarJugador()
 {
+    // Girar hacia Dante antes de atacar
+    FVector DireccionADante = ObjetivoActual->GetActorLocation() - GetActorLocation();
+    DireccionADante.Z = 0;
+    SetActorRotation(DireccionADante.Rotation());
     if (!ObjetivoActual) return;
 
-    LanzarProyectil();
+    // Primero reproducimos la animacion
+    UAnimInstance* AnimInstancia = GetMesh()->GetAnimInstance();
+    if (AnimInstancia && MontajeAtaque)
+    {
+        AnimInstancia->Montage_Play(MontajeAtaque);
+    }
+
+    // Lanzamos el proyectil despues de 0.5 segundos
+    // para que coincida con el momento del lanzamiento en la animacion
+    FTimerHandle TimerProyectil;
+    GetWorldTimerManager().SetTimer(
+        TimerProyectil,
+        this,
+        &AMiniBossHambre::LanzarProyectil,
+        0.5f,
+        false
+    );
 
     Salud = FMath::Clamp(Salud + RegeneracionPorGolpe, 0.0f, SaludMaxima);
 
@@ -232,6 +260,22 @@ void AMiniBossHambre::Morir()
     UE_LOG(LogTemp, Log, TEXT("MiniBossHambre: Derrotado."));
 
     // TODO: Spawnar el Caliz de Abundancia aqui
+
+    // Animacion de muerte
+    UAnimInstance* AnimInstanciaMuerte = GetMesh()->GetAnimInstance();
+    if (AnimInstanciaMuerte && MontajeMuerte)
+    {
+        AnimInstanciaMuerte->Montage_Play(MontajeMuerte);
+    }
+
+    // Esperamos que termine la animacion antes de destruir
+    GetWorldTimerManager().SetTimer(
+        TimerRetroceder,
+        [this]() { Super::Morir(); },
+        2.0f,
+        false
+    );
+    return; // No llamamos Super::Morir() todavia
 
     Super::Morir();
 }

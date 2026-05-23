@@ -59,6 +59,17 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dante|MiniBoss")
     EEstadoMiniBoss EstadoMiniBoss;
 
+    // Montaje de animacion de ataque - asignar desde el editor
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante|MiniBoss|Animaciones")
+    UAnimMontage* MontajeAtaque;
+    // Montaje de animacion de aparicion
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante|MiniBoss|Animaciones")
+    UAnimMontage* MontajeAparicion;
+
+    // Montaje de animacion de muerte
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante|MiniBoss|Animaciones")
+    UAnimMontage* MontajeMuerte;
+
     virtual void AtacarJugador() override;
     virtual void Morir() override;
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;

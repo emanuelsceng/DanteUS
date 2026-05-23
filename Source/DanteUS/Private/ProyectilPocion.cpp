@@ -1,4 +1,6 @@
-﻿#include "ProyectilPocion.h"
+﻿
+#include "ProyectilPocion.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h" // Necesario para el LineTrace
 #include "GameFramework/Character.h"
@@ -72,6 +74,11 @@ void AProyectilPocion::AlSuperponerse(UPrimitiveComponent* OverlappedComp, AActo
     FCollisionQueryParams QueryParams;
     QueryParams.AddIgnoredActor(this);
     QueryParams.AddIgnoredActor(GetOwner());
+    // Ignorar a Dante para que el trace llegue al suelo
+    if (OtherActor)
+    {
+        QueryParams.AddIgnoredActor(OtherActor);
+    }
 
     if (GetWorld()->LineTraceSingleByChannel(HitSuelo, TraceStart, TraceEnd, ECC_WorldStatic, QueryParams))
     {
@@ -84,6 +91,16 @@ void AProyectilPocion::AlSuperponerse(UPrimitiveComponent* OverlappedComp, AActo
 
 void AProyectilPocion::CrearZonaCongelada(FVector Ubicacion)
 {
+    // Spawneamos el efecto de escarcha al impactar
+    if (EfectoImpacto)
+    {
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            GetWorld(),
+            EfectoImpacto,
+            Ubicacion,
+            FRotator::ZeroRotator
+        );
+    }
     if (!ClaseZonaCongelada || !GetWorld()) return;
 
     FActorSpawnParameters Params;
