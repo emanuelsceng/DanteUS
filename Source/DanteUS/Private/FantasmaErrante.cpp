@@ -66,5 +66,4 @@ float AFantasmaErrante::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 void AFantasmaErrante::RestaurarVulnerabilidad()
 {
 	bEsInvulnerable = false;
-	OnInvulnerabilidadTerminada();
-}// Se llama justo cuando bEsInvulnerable es true0000
+	OnInvulnerabilidadTerminada();// Se llama justo cuando bEsInvulnerable es true

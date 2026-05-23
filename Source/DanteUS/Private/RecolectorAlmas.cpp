@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "RecolectorAlmas.h"
-#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/CharacterMovementComponent.h" //reducir velocidad
 #include "Engine/World.h"
 
 ARecolectorAlmas::ARecolectorAlmas()
@@ -14,7 +14,7 @@ ARecolectorAlmas::ARecolectorAlmas()
 	bYaInvocoFantasmas = false;
 	ContadorGolpesRecibidos = 0;
 
-	// Reducir la velocidad máxima de caminata del fantasma
+	// Reducir la velocidad máxima de caminata del recolector
 	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
 }
 
