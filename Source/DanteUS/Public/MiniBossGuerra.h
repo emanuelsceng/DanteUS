@@ -35,7 +35,22 @@ protected:
 
 	//Guardará las coordenadas exactas donde el jefe golpeó el suelo
 	FVector CentroDeExplosion;
+
+	// --- EFECTOS DE NIAGARA PARA EL ATAQUE ESPECIAL ---
+
+	// El círculo rúnico rojo que servirá de advertencia/cráter inicial (0 segundos)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combate | Jefe | VFX")
+	class UNiagaraSystem* FX_CirculoAdvertencia;
+
+	// La gran explosión de fuego final (a los 2 segundos)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combate | Jefe | VFX")
+	class UNiagaraSystem* FX_ExplosionFinal;
+
+	// Animación del salto y golpe en el suelo
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combate | Jefe")
+	class UAnimMontage* MontageEspecial;
 	// Funciones exclusivas del Mini-Boss
+	UFUNCTION(BlueprintCallable, Category = "Combate | Jefe")
 	void EjecutarAtaqueEspecial();
 
 	//función que ejecutará el daño después de los 2 segundos

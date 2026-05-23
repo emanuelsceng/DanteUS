@@ -6,6 +6,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
+#include "NiagaraFunctionLibrary.h"
 
 AMiniBossGuerra::AMiniBossGuerra()
 {
@@ -52,8 +53,11 @@ void AMiniBossGuerra::AtacarJugador()
 	}
 	else
 	{
-		// 2. ATAQUE ESPECIAL (Onda de Choque)
-		EjecutarAtaqueEspecial();
+		// ATAQUE ESPECIAL
+		if (MontageEspecial)
+		{
+			PlayAnimMontage(MontageEspecial);
+		}
 		ContadorAtaques = 0; // Reiniciamos el patrón de ataques
 	}
 }
@@ -66,8 +70,12 @@ void AMiniBossGuerra::EjecutarAtaqueEspecial()
 	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, TEXT("Comandante: ¡ONDA DE CHOQUE (10 DANO)!"));
 
 	// Guardamos las coordenadas exactas de la "grieta" en el suelo
-	CentroDeExplosion = GetActorLocation();
-
+	CentroDeExplosion = GetActorLocation() - FVector(0.0f, 0.0f, 120.0f);
+	//  Hacemos aparecer el círculo mágico rojo de advertencia
+	if (FX_CirculoAdvertencia)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), FX_CirculoAdvertencia, CentroDeExplosion);
+	}
 	// PONEMOS AL JEFE EN RECUPERACIÓN (Inactivo por 2 segundos)
 	EstadoActual = EEstadoEnemigo::Atacando; // Lo forzamos a quedarse en estado de ataque para que el Tick() no lo mueva
 	GetCharacterMovement()->DisableMovement(); // Detenemos sus piernas
@@ -83,7 +91,13 @@ void AMiniBossGuerra::DetonarOndaChoque()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, TEXT("¡BOOOM! ONDA DE CHOQUE (10 DANO, 600 RADIO)"));
 
-	// 4. Ahora sí, infligimos el daño radial usando las coordenadas que guardamos
+	// Hacemos aparecer la explosión 
+	if (FX_ExplosionFinal)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), FX_ExplosionFinal, CentroDeExplosion);
+	}
+
+	// Infligimos el daño radial usando las coordenadas que guardamos
 	UGameplayStatics::ApplyRadialDamage(
 		this,
 		10.0f,
@@ -95,7 +109,7 @@ void AMiniBossGuerra::DetonarOndaChoque()
 		GetController()
 	);
 
-	// 5. La explosión terminó, el jefe vuelve a la normalidad
+	//La explosión terminó, el jefe vuelve a la normalidad
 	FinalizarRecuperacion();
 }
 
