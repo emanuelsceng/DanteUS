@@ -10,13 +10,12 @@
 ASiervoVampirico::ASiervoVampirico()
 {
     // --- AJUSTAMOS LOS VALORES HEREDADOS DE EnemyBase ---
-    // Según el documento Sección 0.1 y Nivel 3:
 
     // El Siervo tiene 20 HP (igual que enemigo común)
     SaludMaxima = 20.0f;
     Salud = SaludMaxima;
 
-    // Hace 5 de daño por golpe según el documento
+    // Hace 5 de daño por golpe 
     DanoAtaque = 5.0f;
 
     // Distancia a la que puede golpear a Dante (cuerpo a cuerpo)
@@ -44,7 +43,8 @@ void ASiervoVampirico::AtacarJugador()
     // FMath::Clamp evita que la salud supere el máximo
     Salud = FMath::Clamp(Salud + RegeneracionPorGolpe, 0.0f, SaludMaxima);
 
-    UE_LOG(LogTemp, Log,
-        TEXT("SiervoVampirico: Ataco y regenero %.1f HP. Salud actual: %.1f"),
-        RegeneracionPorGolpe, Salud);
+    if (GEngine)
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, TEXT("¡Siervo Vampírico mordió a Dante y regeneró vida!"));
+    }
 }

@@ -44,7 +44,8 @@ void AAcechadorSanguinario::AtacarJugador()
     // FMath::Clamp evita que la salud supere el máximo permitido
     Salud = FMath::Clamp(Salud + RegeneracionPorGolpe, 0.0f, SaludMaxima);
 
-    UE_LOG(LogTemp, Log,
-        TEXT("AcechadorSanguinario: Ataco y regenero %.1f HP. Salud actual: %.1f"),
-        RegeneracionPorGolpe, Salud);
+    if (GEngine)
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Orange, TEXT("¡Acechador Sanguinario encajó un zarpazo ágil!"));
+    }
 }
