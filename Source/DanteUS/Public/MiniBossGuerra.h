@@ -52,7 +52,7 @@ protected:
 	// Funciones exclusivas del Mini-Boss
 	UFUNCTION(BlueprintCallable, Category = "Combate | Jefe")
 	void EjecutarAtaqueEspecial();
-
+	
 	//función que ejecutará el daño después de los 2 segundos
 	void DetonarOndaChoque();
 	void FinalizarRecuperacion();

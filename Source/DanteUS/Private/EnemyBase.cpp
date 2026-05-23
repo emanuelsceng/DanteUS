@@ -110,14 +110,30 @@ void AEnemyBase::AtacarJugador()
         PlayAnimMontage(MontageAtaque);
     }
 
-    if (ObjetivoActual)
-    {
-        UGameplayStatics::ApplyDamage(ObjetivoActual, DanoAtaque, GetController(), this, UDamageType::StaticClass());
-    }
-
-
     // Cooldown del ataque: Vuelve a perseguir en 1.5 segundos
     GetWorldTimerManager().SetTimer(TemporizadorAtaque, this, &AEnemyBase::FinalizarAtaque, 1.5f, false);
+}
+// 2. LA NUEVA FUNCIÓN HEREDABLE
+void AEnemyBase::EjecutarGolpeMelee()
+{
+    if (ObjetivoActual)
+    {
+        // Distancia matemática en el momento exacto de la animación
+        float DistanciaADante = FVector::Dist(GetActorLocation(), ObjetivoActual->GetActorLocation());
+
+        // Comparamos usando la variable DistanciaAtaque que ya tiene el padre + 50.0f de margen
+        if (DistanciaADante <= (DistanciaAtaque + 50.0f))
+        {
+            // ¡Impacto! Usamos DanoAtaque, cada enemigo hijo (esqueletos, demonios) usará su propio valor
+            UGameplayStatics::ApplyDamage(ObjetivoActual, DanoAtaque, GetController(), this, UDamageType::StaticClass());
+            GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Enemigo: ¡Toma un golpe!"));
+        }
+        else
+        {
+            // Esquiva exitosa Souls-like
+            GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("Enemigo: ¡Fallé el golpe!"));
+        }
+    }
 }
 
 void AEnemyBase::FinalizarAtaque()
