@@ -1,50 +1,51 @@
 #include "EnemigoEscupidor.h"
-#include "Engine/World.h"
-#include "GameFramework/Actor.h"
-#include "Kismet/GameplayStatics.h" // Necesario para buscar a Dante
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/Character.h"
 
 AEnemigoEscupidor::AEnemigoEscupidor()
 {
-    SaludMaxima = 15.0f; // Cañón de cristal: menos vida que el zombie común
-    Salud = SaludMaxima;
-    DanoAtaque = 3.0f;
-    DistanciaAtaque = 1500.0f; // ¡Aumento masivo de distancia!
+	// Estadísticas del esbirro común
+	SaludMaxima = 15.0f;
+	Salud = SaludMaxima;
+	DanoAtaque = 10.0f;
+	DistanciaAtaque = 1500.0f;
+
+	// Configuración del cargador para este enemigo específico
+	TamanoPiscina = 5;
 }
+
 void AEnemigoEscupidor::AtacarJugador()
 {
-    // Verificamos que el Blueprint tenga un proyectil asignado
-    if (ClaseProyectilVomito)
-    {
-        // 1. Declaramos las variables de posición
-        FVector UbicacionCentro = GetActorLocation();
-        FVector HaciaAdelante = GetActorForwardVector();
+	ACharacter* Dante = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 
-        // 2. Calculamos el punto de origen de la bala desplazado hacia adelante
-        FVector PuntoDeDisparo = UbicacionCentro + (HaciaAdelante * 100.0f) + FVector(0.0f, 0.0f, 50.0f);
+	if (Dante)
+	{
+		// --- NUEVO: HACER QUE EL CUERPO DEL ENEMIGO TE MIRE ---
+		// 1. Calculamos el vector de dirección restando las posiciones (Destino - Origen)
+		FVector DireccionHaciaDante = Dante->GetActorLocation() - GetActorLocation();
 
-        // 3. Buscamos a Dante en el nivel
-        ACharacter* Dante = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-        FRotator RotacionDisparo = GetActorRotation(); // Rotación por defecto de seguridad
+		// 2. Aislamos SOLO el eje Yaw (Rotación horizontal). 
+		// Ponemos Pitch y Roll en 0.0f para que el enemigo no se incline hacia el suelo o vuele.
+		FRotator RotacionMirada = FRotator(0.0f, DireccionHaciaDante.Rotation().Yaw, 0.0f);
 
-        // 4. Si Dante existe, calculamos la puntería exacta (Pitch y Yaw)
-        if (Dante)
-        {
-            FVector UbicacionDante = Dante->GetActorLocation();
-            RotacionDisparo = (UbicacionDante - PuntoDeDisparo).Rotation();
-        }
+		// En lugar de usar solo SetActorRotation(RotacionMirada); 
+		// le añadimos ETeleportType::TeleportPhysics.
+		// Esto le dice a Unreal: "Gíralo, y si choca un milímetro con la pared al girar, 
+		// no lo trabes, simplemente reacomódalo suavemente".
+		SetActorRotation(RotacionMirada, ETeleportType::TeleportPhysics);
 
-        // 5. Instanciamos el proyectil
-        FActorSpawnParameters SpawnParams;
-        SpawnParams.Owner = this;
-        SpawnParams.Instigator = GetInstigator();
+		// -------------------------------------------------------
 
-        GetWorld()->SpawnActor<AActor>(ClaseProyectilVomito, PuntoDeDisparo, RotacionDisparo, SpawnParams);
-    }
+		// (El código de la bala que ya teníamos)
+		FVector Origen = GetActorLocation() + (GetActorForwardVector() * 150.0f) + FVector(0.0f, 0.0f, 50.0f);
+		FRotator RotacionDisparo = ((Dante->GetActorLocation() + FVector(0.0f, 0.0f, 50.0f)) - Origen).Rotation();
 
-    // -------------------------------------------------------------------------
-    // LA SOLUCIÓN MÁGICA DE LA MÁQUINA DE ESTADOS
-    // Usamos el temporizador de la clase padre para llamar a FinalizarAtaque.
-    // Le puse 2.0 segundos de recarga porque el Escupidor ataca a distancia.
-    // -------------------------------------------------------------------------
-    GetWorldTimerManager().SetTimer(TemporizadorAtaque, this, &AEnemyBase::FinalizarAtaque, 5.0f, false);
+		float VelocidadBala = 850.0f;
+		float GravedadBala = 0.0f;
+
+		EjecutarDisparo(Origen, RotacionDisparo, VelocidadBala, GravedadBala);
+	}
+
+	// El Cooldown de 3.5 segundos que definimos para balancear el juego
+	GetWorldTimerManager().SetTimer(TemporizadorAtaque, this, &AEnemyBase::FinalizarAtaque, 3.5f, false);
 }

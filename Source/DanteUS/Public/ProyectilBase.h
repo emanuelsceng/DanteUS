@@ -15,24 +15,36 @@ class DANTEUS_API AProyectilBase : public AActor
 public:
 	AProyectilBase();
 
-	// 1. LA BASE MATEMÁTICA (Lo que todo proyectil en el juego necesita)
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
+	// Componentes físicos universales expuestos al Blueprint
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Proyectil | Componentes")
 	USphereComponent* Colision;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Proyectil | Componentes")
 	UProjectileMovementComponent* Movimiento;
 
-	// 2. EL DATO VARIABLE (Lo que cada compañero cambiará en su nivel)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Configuracion")
+	// Configuración de estadísticas
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Proyectil | Ajustes")
 	float DanoAtaque;
 
-	// 3. LA FLEXIBILIDAD (¡El truco para tu defensa!)
-	// Esta función NO se programa en C++, se programa en el Blueprint visual.
-	// Permite que cada proyectil haga algo distinto al chocar (sonidos, partículas, charcos de ácido).
-	UFUNCTION(BlueprintImplementableEvent, Category = "Eventos")
+	// Interruptor de Arquitectura (SOLID): true usa Pool, false se destruye al chocar
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Proyectil | Object Pool")
+	bool bUsaObjectPool;
+
+	// Funciones de control cinético llamadas por la piscina de memoria
+	void ActivarProyectil(FVector NuevaPosicion, FRotator NuevaRotacion, float Velocidad, float Gravedad);
+	void DesactivarProyectil();
+
+protected:
+	virtual void BeginPlay() override;
+
+	// Función de impacto blindada contra fuego amigo
+	UFUNCTION()
+	virtual void AlChocar(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	// Macro de Unreal que abre una compuerta para que tus amigos pongan partículas/sonidos en Blueprint
+	UFUNCTION(BlueprintImplementableEvent, Category = "Proyectil | Efectos")
 	void AlImpactarEfectosVisuales();
 
-	// La función matemática interna de C++
-	UFUNCTION()
-	void AlChocar(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+private:
+	FTimerHandle TemporizadorReciclaje;
 };
