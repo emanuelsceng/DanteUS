@@ -19,7 +19,8 @@ enum class ETipoEnemigo : uint8
 	Vampirico_Siervo     UMETA(DisplayName = "Siervo Vampirico (Nivel 3)"),
 	Vampirico_Acechador  UMETA(DisplayName = "Acechador Sanguinario (Nivel 3)"),
 	Vampirico_Guardian   UMETA(DisplayName = "Guardian Vampirico (Nivel 3)"),
-	Fantasma            UMETA(DisplayName = "Fantasma Errante (Nivel 4)")
+	Fantasma            UMETA(DisplayName = "Fantasma Errante (Nivel 4)"),
+	MiniBoss_Hambre     UMETA(DisplayName = "Mini-Boss Sello del Hambre (Nivel 3)"),
 };
 
 UCLASS()
