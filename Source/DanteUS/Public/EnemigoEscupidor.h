@@ -1,26 +1,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EnemyRanged.h" // <--- Importante: Incluimos a su nuevo padre disparador
+#include "EnemyRanged.h" // Hereda del sistema base
 #include "EnemigoEscupidor.generated.h"
 
-/**
- * CLASE ENEMIGO ESCUPIDOR (Nivel 2 - Sello de la Peste)
- * * Aplica Programación Orientada a Objetos mediante Especialización por Herencia.
- * Al heredar de AEnemyRanged, adquiere automáticamente el patrón Object Pool
- * para disparar proyectiles optimizados sin necesidad de duplicar código.
- */
 UCLASS()
 class DANTEUS_API AEnemigoEscupidor : public AEnemyRanged
 {
 	GENERATED_BODY()
 
 public:
-	// Constructor: Aquí configuramos su vida, daño y el tamaño de su cargador
 	AEnemigoEscupidor();
 
-	/** * POLIMORFISMO: Sobrescribimos la función de ataque.
-	 * En lugar de dar un golpe cuerpo a cuerpo, calculamos el tiro parabólico de su vómito.
-	 */
+	// POLIMORFISMO: Esta es la pieza clave. 
+	// Sobrescribimos el ataque base para darle el comportamiento de "escupitajo"
 	virtual void AtacarJugador() override;
+	// En EnemigoEscupidor.h, dentro de la clase:
+private:
+	float TiempoEntreDisparos = 2.0f; // Segundos que espera entre cada disparo
+	float UltimoTiempoDisparo = 0.0f; // Guarda cuándo fue el último disparo
 };

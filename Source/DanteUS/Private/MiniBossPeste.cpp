@@ -1,110 +1,127 @@
 #include "MiniBossPeste.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "Kismet/GameplayStatics.h"
-#include "TimerManager.h"
 #include "AIController.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "TimerManager.h"
 
 AMiniBossPeste::AMiniBossPeste()
 {
-	SaludMaxima = 1000.0f;
-	Salud = SaludMaxima;
-	DanoAtaque = 15.0f;
-	DistanciaAtaque = 150.0f;
-	TamanoPiscina = 12;
+    // --- BALANCEO DE DIFICULTAD ---
+    SaludMaxima = 75.0f; // Aumentada para que el combate dure
+    Salud = SaludMaxima;
 
-	VelocidadMovimientoJefe = 180.0f;
-	LimiteGolpesParaVomitar = 5;
-	ContadorGolpesRecibidos = 0;
-	bEstaEjecutandoHabilidad = false;
+    // --- CONFIGURACIÓN DE HABILIDAD ---
+    LimiteGolpesParaVomitar = 3;   // Ahora requiere 3 golpes de Dante
+    CantidadVomitosPorRafaga = 4;  // Lanza 4 proyectiles creando áreas de veneno
 
-	if (GetCharacterMovement())
-	{
-		GetCharacterMovement()->MaxWalkSpeed = VelocidadMovimientoJefe;
-	}
+    // --- MOVIMIENTO ---
+    if (GetCharacterMovement())
+    {
+        GetCharacterMovement()->MaxWalkSpeed = 300.0f; // Más rápido que el promedio
+    }
+
+    // Inicializaciones
+    bHuyeDelJugador = false;
+    TamanoPiscina = 15;
+    ContadorGolpesRecibidos = 0;
+    ContadorVomitosLanzados = 0;
+    bEstaEjecutandoHabilidad = false;
 }
 
 void AMiniBossPeste::BeginPlay()
 {
-	Super::BeginPlay();
-	GetWorldTimerManager().SetTimer(TemporizadorRadarIA, this, &AMiniBossPeste::RutinaRadarPersecucion, 0.5f, true);
-}
-
-void AMiniBossPeste::RutinaRadarPersecucion()
-{
-	if (!bEstaEjecutandoHabilidad && EstadoActual == EEstadoEnemigo::Persiguiendo)
-	{
-		ACharacter* Dante = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-		if (Dante) { AlVerJugador(Dante); }
-	}
+    Super::BeginPlay();
 }
 
 float AMiniBossPeste::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	float DanoReal = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+    float DanoReal = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	if (Salud > 0.0f && !bEstaEjecutandoHabilidad)
-	{
-		ContadorGolpesRecibidos++;
-		if (ContadorGolpesRecibidos >= LimiteGolpesParaVomitar)
-		{
-			IniciarPreparacionVomito();
-		}
-	}
-	return DanoReal;
+    // Solo sumamos golpes si NO está vomitando (para evitar reinicios o fallos)
+    if (Salud > 0.0f && !bEstaEjecutandoHabilidad)
+    {
+        ContadorGolpesRecibidos++;
+        if (ContadorGolpesRecibidos >= LimiteGolpesParaVomitar)
+        {
+            IniciarPreparacionVomito();
+        }
+    }
+    return DanoReal;
 }
 
 void AMiniBossPeste::AtacarJugador()
 {
-	if (bEstaEjecutandoHabilidad) return;
+    if (bEstaEjecutandoHabilidad) return;
 
-	OnAtaqueCortaDistanciaBlueprint();
-	Super::AtacarJugador();
-	GetWorldTimerManager().SetTimer(TemporizadorZarpazo, this, &AMiniBossPeste::DespertarCerebro, 1.5f, false);
+    OnAtaqueCortaDistanciaBlueprint();
+    AEnemyBase::AtacarJugador(); // Llama al abuelo (cuerpo a cuerpo)
+    GetWorldTimerManager().SetTimer(TemporizadorZarpazo, this, &AMiniBossPeste::DespertarCerebroBoss, 1.5f, false);
 }
 
 void AMiniBossPeste::IniciarPreparacionVomito()
 {
-	bEstaEjecutandoHabilidad = true;
-	ContadorGolpesRecibidos = 0;
-	GetCharacterMovement()->MaxWalkSpeed = 0.0f;
-	OnPrepararVomitoBlueprint();
-	GetWorldTimerManager().SetTimer(TemporizadorPreparacion, this, &AMiniBossPeste::EjecutarVomitoAbanico, 1.5f, false);
+    bEstaEjecutandoHabilidad = true;
+    ContadorGolpesRecibidos = 0;
+    ContadorVomitosLanzados = 0;
+
+    // Detenemos el movimiento físico y la IA
+    if (GetCharacterMovement()) GetCharacterMovement()->MaxWalkSpeed = 0.0f;
+    AAIController* ControladorIA = Cast<AAIController>(GetController());
+    if (ControladorIA) ControladorIA->StopMovement();
+
+    OnPrepararVomitoBlueprint();
+    GetWorldTimerManager().SetTimer(TemporizadorPreparacion, this, &AMiniBossPeste::DispararVomitoSecuencial, 2.0f, false);
 }
 
-void AMiniBossPeste::EjecutarVomitoAbanico()
+void AMiniBossPeste::DispararVomitoSecuencial()
 {
-	ACharacter* Dante = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	if (!Dante) return;
+    ACharacter* Dante = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 
-	FVector DireccionHaciaDante = Dante->GetActorLocation() - GetActorLocation();
-	FRotator RotacionBase = FRotator(0.0f, DireccionHaciaDante.Rotation().Yaw, 0.0f);
-	SetActorRotation(RotacionBase, ETeleportType::TeleportPhysics);
+    if (Dante && EstadoActual != EEstadoEnemigo::Muerto)
+    {
+        FVector DireccionHaciaDante = Dante->GetActorLocation() - GetActorLocation();
+        float DistanciaADante = DireccionHaciaDante.Size();
 
-	float Angulos[6] = { -45.0f, -27.0f, -9.0f, 9.0f, 27.0f, 45.0f };
-	// Lo sacamos más lejos para que las balas no choquen con su propia cápsula
-	FVector Origen = GetActorLocation() + (GetActorForwardVector() * 500.0f) + FVector(0.0f, 0.0f, 50.0f);
+        // Ajustamos fuerza dinámicamente según la distancia
+        float FuerzaDinamica = FMath::Clamp(DistanciaADante * 1.1f, 700.0f, 2500.0f);
+        FRotator RotacionApunte = FRotator(30.0f, DireccionHaciaDante.Rotation().Yaw, 0.0f);
 
-	for (int i = 0; i < 6; i++)
-	{
-		FRotator RotacionDisparo = RotacionBase;
-		RotacionDisparo.Yaw += Angulos[i];
-		EjecutarDisparo(Origen, RotacionDisparo, 400.0f, 0.0f);
-	}
+        SetActorRotation(FRotator(0.0f, DireccionHaciaDante.Rotation().Yaw, 0.0f));
 
-	GetWorldTimerManager().SetTimer(TemporizadorRecuperacion, this, &AMiniBossPeste::FinalizarRecuperacion, 2.0f, false);
+        FVector Origen = GetActorLocation() + (GetActorForwardVector() * 100.0f) + FVector(0.0f, 0.0f, 150.0f);
+        EjecutarDisparo(Origen, RotacionApunte, FuerzaDinamica, 1.5f);
+    }
+
+    ContadorVomitosLanzados++;
+
+    if (ContadorVomitosLanzados < CantidadVomitosPorRafaga)
+    {
+        // Delay de 2.0s entre disparos para que Dante pueda esquivar
+        GetWorldTimerManager().SetTimer(TemporizadorRafaga, this, &AMiniBossPeste::DispararVomitoSecuencial, 2.0f, false);
+    }
+    else
+    {
+        GetWorldTimerManager().SetTimer(TemporizadorRecuperacion, this, &AMiniBossPeste::FinalizarRecuperacion, 1.5f, false);
+    }
 }
 
 void AMiniBossPeste::FinalizarRecuperacion()
 {
-	GetCharacterMovement()->MaxWalkSpeed = VelocidadMovimientoJefe;
-	bEstaEjecutandoHabilidad = false;
-	DespertarCerebro();
+    bEstaEjecutandoHabilidad = false;
+
+    // Forzamos el reinicio de la velocidad para que no se quede "tonto" o lento
+    if (GetCharacterMovement())
+    {
+        GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+    }
+
+    DespertarCerebroBoss();
 }
 
-void AMiniBossPeste::DespertarCerebro()
+void AMiniBossPeste::DespertarCerebroBoss()
 {
-	if (EstadoActual != EEstadoEnemigo::Muerto)
-	{
-		EstadoActual = EEstadoEnemigo::Persiguiendo;
-	}
+    if (EstadoActual != EEstadoEnemigo::Muerto)
+    {
+        EstadoActual = EEstadoEnemigo::Persiguiendo;
+    }
 }

@@ -4,48 +4,44 @@
 
 AEnemigoEscupidor::AEnemigoEscupidor()
 {
-	// Estadísticas del esbirro común
-	SaludMaxima = 15.0f;
-	Salud = SaludMaxima;
-	DanoAtaque = 10.0f;
-	DistanciaAtaque = 1500.0f;
+    // --- DISTANCIA (EL SENSOR) ---
+    // DistanciaParaAtacar: El enemigo "ve" a Dante y ataca hasta a 2000 unidades.
+    // DistanciaParaHuir: Si Dante se acerca a menos de 800, el enemigo retrocede.
+    this->DistanciaParaAtacar = 2000.0f;
+    this->DistanciaParaHuir = 800.0f;
 
-	// Configuración del cargador para este enemigo específico
-	TamanoPiscina = 5;
+    this->bHuyeDelJugador = true;
+    this->TamanoPiscina = 5;
+
+    // Estadísticas
+    SaludMaxima = 15.0f;
+    Salud = SaludMaxima;
+
+    // Cooldown
+    this->UltimoTiempoDisparo = 0.0f;
+    this->TiempoEntreDisparos = 1.5f;
 }
 
 void AEnemigoEscupidor::AtacarJugador()
 {
-	ACharacter* Dante = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+    // Cooldown
+    float TiempoActual = GetWorld()->GetTimeSeconds();
+    if (TiempoActual - UltimoTiempoDisparo < TiempoEntreDisparos) return;
+    UltimoTiempoDisparo = TiempoActual;
 
-	if (Dante)
-	{
-		// --- NUEVO: HACER QUE EL CUERPO DEL ENEMIGO TE MIRE ---
-		// 1. Calculamos el vector de dirección restando las posiciones (Destino - Origen)
-		FVector DireccionHaciaDante = Dante->GetActorLocation() - GetActorLocation();
+    ACharacter* Dante = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+    if (!Dante) return;
 
-		// 2. Aislamos SOLO el eje Yaw (Rotación horizontal). 
-		// Ponemos Pitch y Roll en 0.0f para que el enemigo no se incline hacia el suelo o vuele.
-		FRotator RotacionMirada = FRotator(0.0f, DireccionHaciaDante.Rotation().Yaw, 0.0f);
+    // Mirar a Dante
+    FVector DireccionHaciaDante = Dante->GetActorLocation() - GetActorLocation();
+    FRotator RotacionMirada = FRotator(0.0f, DireccionHaciaDante.Rotation().Yaw, 0.0f);
+    SetActorRotation(RotacionMirada);
 
-		// En lugar de usar solo SetActorRotation(RotacionMirada); 
-		// le añadimos ETeleportType::TeleportPhysics.
-		// Esto le dice a Unreal: "Gíralo, y si choca un milímetro con la pared al girar, 
-		// no lo trabes, simplemente reacomódalo suavemente".
-		SetActorRotation(RotacionMirada, ETeleportType::TeleportPhysics);
+    FVector Origen = GetActorLocation() + (GetActorForwardVector() * 100.0f) + FVector(0.0f, 0.0f, 60.0f);
+    FRotator RotacionDisparo = (Dante->GetActorLocation() - Origen).Rotation();
 
-		// -------------------------------------------------------
-
-		// (El código de la bala que ya teníamos)
-		FVector Origen = GetActorLocation() + (GetActorForwardVector() * 150.0f) + FVector(0.0f, 0.0f, 50.0f);
-		FRotator RotacionDisparo = ((Dante->GetActorLocation() + FVector(0.0f, 0.0f, 50.0f)) - Origen).Rotation();
-
-		float VelocidadBala = 850.0f;
-		float GravedadBala = 0.0f;
-
-		EjecutarDisparo(Origen, RotacionDisparo, VelocidadBala, GravedadBala);
-	}
-
-	// El Cooldown de 3.5 segundos que definimos para balancear el juego
-	GetWorldTimerManager().SetTimer(TemporizadorAtaque, this, &AEnemyBase::FinalizarAtaque, 3.5f, false);
+    // --- VELOCIDAD DE LA BALA ---
+    // Bajamos de 3000 a 1500 para que sea una bala rápida pero visible y esquivable.
+    // Mantenemos 0.0f en gravedad para que sea recta.
+    EjecutarDisparo(Origen, RotacionDisparo, 1500.0f, 0.0f);
 }

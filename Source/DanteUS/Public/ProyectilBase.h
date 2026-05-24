@@ -5,6 +5,7 @@
 #include "ProyectilBase.generated.h"
 
 class USphereComponent;
+class UStaticMeshComponent;
 class UProjectileMovementComponent;
 
 UCLASS()
@@ -15,36 +16,39 @@ class DANTEUS_API AProyectilBase : public AActor
 public:
 	AProyectilBase();
 
-	// Componentes físicos universales expuestos al Blueprint
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Proyectil | Componentes")
-	USphereComponent* Colision;
+	// Función genérica para lanzar la bala con cualquier velocidad y arco de gravedad
+	UFUNCTION(BlueprintCallable, Category = "Dante | Proyectil")
+	virtual void Disparar(FVector Direccion, float Velocidad, float Gravedad);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Proyectil | Componentes")
-	UProjectileMovementComponent* Movimiento;
-
-	// Configuración de estadísticas
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Proyectil | Ajustes")
-	float DanoAtaque;
-
-	// Interruptor de Arquitectura (SOLID): true usa Pool, false se destruye al chocar
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Proyectil | Object Pool")
-	bool bUsaObjectPool;
-
-	// Funciones de control cinético llamadas por la piscina de memoria
-	void ActivarProyectil(FVector NuevaPosicion, FRotator NuevaRotacion, float Velocidad, float Gravedad);
-	void DesactivarProyectil();
+	UFUNCTION(BlueprintCallable, Category = "Dante | Proyectil | Pool")
+	virtual void DesactivarProyectil();
 
 protected:
 	virtual void BeginPlay() override;
 
-	// Función de impacto blindada contra fuego amigo
+	// Componentes
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dante | Componentes")
+	USphereComponent* Colision;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dante | Componentes")
+	UStaticMeshComponent* MallaVisual;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dante | Componentes")
+	UProjectileMovementComponent* ComponenteMovimiento;
+
+	// Variables universales
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Balance")
+	float DanoAtaque;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Pool")
+	bool bUsaObjectPool;
+
 	UFUNCTION()
-	virtual void AlChocar(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	void AlChocar(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
-	// Macro de Unreal que abre una compuerta para que tus amigos pongan partículas/sonidos en Blueprint
-	UFUNCTION(BlueprintImplementableEvent, Category = "Proyectil | Efectos")
-	void AlImpactarEfectosVisuales();
+	// EVENTO MÁGICO: Esto permite que cada bala haga algo distinto al chocar desde el Blueprint (Ej. Crear charco de veneno)
+	UFUNCTION(BlueprintImplementableEvent, Category = "Dante | Eventos")
+	void OnImpactoEspecial(AActor* ActorGolpeado, FVector UbicacionImpacto);
 
-private:
-	FTimerHandle TemporizadorReciclaje;
+
 };

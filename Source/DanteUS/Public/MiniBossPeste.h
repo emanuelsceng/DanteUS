@@ -7,44 +7,48 @@
 UCLASS()
 class DANTEUS_API AMiniBossPeste : public AEnemyRanged
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	AMiniBossPeste();
+    AMiniBossPeste();
 
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-	virtual void AtacarJugador() override;
+    // Sobrescribimos el daño para controlar el contador de golpes
+    virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dante | Boss | Eventos")
-	void OnAtaqueCortaDistanciaBlueprint();
+    // Sobrescribimos el ataque para asegurar que solo pegue de cerca
+    virtual void AtacarJugador() override;
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dante | Boss | Eventos")
-	void OnPrepararVomitoBlueprint();
+    // Eventos para el Blueprint (Visuales)
+    UFUNCTION(BlueprintImplementableEvent, Category = "Dante | Boss | Eventos")
+    void OnAtaqueCortaDistanciaBlueprint();
+
+    UFUNCTION(BlueprintImplementableEvent, Category = "Dante | Boss | Eventos")
+    void OnPrepararVomitoBlueprint();
 
 protected:
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
 
-	// Balanceo
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Boss | Balance")
-	float VelocidadMovimientoJefe;
+    // Variables de configuración
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Boss | Balance")
+    int32 LimiteGolpesParaVomitar;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Boss | Balance")
-	int32 LimiteGolpesParaVomitar;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Boss | Balance")
+    int32 CantidadVomitosPorRafaga;
 
-	// Estados
-	int32 ContadorGolpesRecibidos;
-	bool bEstaEjecutandoHabilidad;
+    // Estado del Boss
+    int32 ContadorGolpesRecibidos;
+    int32 ContadorVomitosLanzados;
+    bool bEstaEjecutandoHabilidad;
 
-	// Timers
-	FTimerHandle TemporizadorRadarIA;
-	FTimerHandle TemporizadorPreparacion;
-	FTimerHandle TemporizadorRecuperacion;
-	FTimerHandle TemporizadorZarpazo;
+    // Timers
+    FTimerHandle TemporizadorPreparacion;
+    FTimerHandle TemporizadorRafaga;
+    FTimerHandle TemporizadorRecuperacion;
+    FTimerHandle TemporizadorZarpazo;
 
-	// Lógica de combate
-	void IniciarPreparacionVomito();
-	void EjecutarVomitoAbanico();
-	void FinalizarRecuperacion();
-	void RutinaRadarPersecucion();
-	void DespertarCerebro();
+    // Funciones de habilidad
+    void IniciarPreparacionVomito();
+    void DispararVomitoSecuencial();
+    void FinalizarRecuperacion();
+    void DespertarCerebroBoss();
 };

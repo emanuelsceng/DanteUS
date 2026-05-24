@@ -1,89 +1,115 @@
 #include "EnemyRanged.h"
-#include "ProyectilBase.h"
+#include "AIController.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/Character.h"
+#include "TimerManager.h"
 
 AEnemyRanged::AEnemyRanged()
 {
-	DistanciaAtaque = 1200.0f;
-	TamanoPiscina = 10;
+    // Valores por defecto (si una clase hija no los cambia, usará estos)
+    this->bHuyeDelJugador = true;
+    this->DistanciaParaHuir = 400.0f;
+    this->DistanciaParaAtacar = 800.0f;
+    this->TamanoPiscina = 10;
 }
 
 void AEnemyRanged::BeginPlay()
 {
-	Super::BeginPlay();
+    Super::BeginPlay();
 
-	if (ClaseProyectil)
-	{
-		for (int32 i = 0; i < TamanoPiscina; i++)
-		{
-			FActorSpawnParameters SpawnParams;
-			// ARREGLO DE PERSISTENCIA: Dejar en nullptr evita que las balas vivas desaparezcan si el enemigo muere en pleno vuelo
-			SpawnParams.Owner = nullptr;
-			SpawnParams.Instigator = Cast<APawn>(this);
-			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    // Inicializamos el Pool de objetos
+    InicializarPiscina();
 
-			// Ubicación en el cementerio subterráneo para salvaguardar el SensorVision del enemigo
-			FVector PosicionCementerio = FVector(0.0f, 0.0f, -10000.0f);
+    // Iniciamos el cerebro (IA) para que piense cada 0.5 segundos
+    GetWorldTimerManager().SetTimer(TemporizadorCerebroTactico, this, &AEnemyRanged::RutinaCerebroTactico, 0.5f, true);
+}
 
-			AProyectilBase* NuevaBala = GetWorld()->SpawnActor<AProyectilBase>(ClaseProyectil, PosicionCementerio, FRotator::ZeroRotator, SpawnParams);
+void AEnemyRanged::RutinaCerebroTactico()
+{
+    if (EstadoActual == EEstadoEnemigo::Muerto) return;
 
-			if (NuevaBala)
-			{
-				NuevaBala->bUsaObjectPool = true;
-				NuevaBala->SetLifeSpan(0.0f); // Inmortalidad inicial en memoria
-				NuevaBala->DesactivarProyectil();
-				PiscinaProyectiles.Add(NuevaBala);
-			}
-		}
-	}
+    ACharacter* Dante = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+    AAIController* ControladorIA = Cast<AAIController>(GetController());
+    if (!Dante || !ControladorIA) return;
+
+    float Distancia = FVector::Dist(GetActorLocation(), Dante->GetActorLocation());
+
+    // 1. Huida (si está muy cerca)
+    if (this->bHuyeDelJugador && Distancia < this->DistanciaParaHuir)
+    {
+        HuirDeDante(Dante);
+    }
+    // 2. Ataque (si está en rango)
+    else if (Distancia <= this->DistanciaParaAtacar)
+    {
+        ControladorIA->StopMovement(); // Detener movimiento para disparar
+        AtacarJugador();
+    }
+    // 3. PERSECUCIÓN (Aquí está el cambio clave para que se quede lejos)
+    else
+    {
+        // En lugar de acercarse hasta el borde (DistanciaParaAtacar - 100),
+        // le decimos que se detenga mucho antes (al 70% de su rango de ataque).
+        // Si tu rango es 2000, se detendrá a 1400 de distancia.
+        float DistanciaSegura = this->DistanciaParaAtacar * 0.7f;
+        ControladorIA->MoveToActor(Dante, DistanciaSegura);
+    }
+}
+void AEnemyRanged::HuirDeDante(ACharacter* Dante)
+{
+    AAIController* ControladorIA = Cast<AAIController>(GetController());
+    if (!ControladorIA) return;
+
+    FVector DireccionEscape = GetActorLocation() - Dante->GetActorLocation();
+    DireccionEscape.Normalize();
+    FVector PuntoSeguro = GetActorLocation() + (DireccionEscape * 600.0f);
+
+    ControladorIA->MoveToLocation(PuntoSeguro);
+}
+
+// Ataque básico (por si el hijo no lo define)
+void AEnemyRanged::AtacarJugador()
+{
+    Super::AtacarJugador();
+    FVector Origen = GetActorLocation() + (GetActorForwardVector() * 100.0f);
+    EjecutarDisparo(Origen, GetActorRotation(), 1000.0f, 0.0f);
+}
+
+// --- GESTIÓN DEL OBJECT POOL (NO TOCAR) ---
+void AEnemyRanged::InicializarPiscina()
+{
+    if (!ClaseProyectil) return;
+
+    for (int32 i = 0; i < this->TamanoPiscina; i++)
+    {
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.Owner = this;
+        SpawnParams.Instigator = GetInstigator();
+
+        AProyectilBase* P = GetWorld()->SpawnActor<AProyectilBase>(ClaseProyectil, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+        if (P)
+        {
+            P->DesactivarProyectil();
+            PiscinaProyectiles.Add(P);
+        }
+    }
 }
 
 AProyectilBase* AEnemyRanged::ObtenerProyectilDisponible()
 {
-	AProyectilBase* BalaSustituta = nullptr;
-
-	for (AProyectilBase* Bala : PiscinaProyectiles)
-	{
-		if (!Bala) continue;
-
-		// Estado Ideal: Encontró munición en reposo
-		if (Bala->IsHidden()) return Bala;
-
-		// Si no hay libres, registramos la primera activa por si el cargador colapsa
-		if (!BalaSustituta) BalaSustituta = Bala;
-	}
-
-	// ARREGLO AGOTAMIENTO DE POOL (Bullet-Hell Pro Fix): Si el Boss vacía el cargador,
-	// canibaliza la bala más antigua en el aire para garantizar que el flujo de disparos no se rompa
-	if (BalaSustituta)
-	{
-		BalaSustituta->DesactivarProyectil();
-		return BalaSustituta;
-	}
-
-	return nullptr;
+    for (AProyectilBase* P : PiscinaProyectiles)
+    {
+        if (P && P->IsHidden()) return P;
+    }
+    return nullptr;
 }
 
 void AEnemyRanged::EjecutarDisparo(FVector Origen, FRotator Rotacion, float Velocidad, float Gravedad)
 {
-	AProyectilBase* BalaParaUsar = ObtenerProyectilDisponible();
-	if (BalaParaUsar)
-	{
-		BalaParaUsar->ActivarProyectil(Origen, Rotacion, Velocidad, Gravedad);
-	}
-}
-
-void AEnemyRanged::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	// ARREGLO DE RECOLECCIÓN DE PUNTEROS BASURA (Anti-Memory Leak):
-	// Destruye físicamente de la memoria RAM del hardware todas las entidades asociadas al pool al morir
-	for (AProyectilBase* Bala : PiscinaProyectiles)
-	{
-		if (Bala && Bala->IsValidLowLevel())
-		{
-			Bala->Destroy();
-		}
-	}
-	PiscinaProyectiles.Empty();
-
-	Super::EndPlay(EndPlayReason);
+    AProyectilBase* P = ObtenerProyectilDisponible();
+    if (P)
+    {
+        P->SetActorLocationAndRotation(Origen, Rotacion);
+        P->Disparar(Rotacion.Vector(), Velocidad, Gravedad);
+    }
 }

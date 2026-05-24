@@ -1,42 +1,46 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EnemyBase.h" // 1. HERENCIA: Traemos toda la lógica del enemigo base
+#include "EnemyBase.h"
 #include "EnemigoPustulento.generated.h"
 
 UCLASS()
 class DANTEUS_API AEnemigoPustulento : public AEnemyBase
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	AEnemigoPustulento();
+    AEnemigoPustulento();
 
-	// Componente de colisión para la mecánica de riesgo (Escudo de Hedor)
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Peste | Componentes")
-	class USphereComponent* AuraVeneno;
+    // Componentes y Lógica
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Peste | Componentes")
+    class USphereComponent* AuraVeneno;
 
-	// 2. POLIMORFISMO: Sobreescribimos la forma en que este enemigo ataca
-	virtual void AtacarJugador() override;
+    virtual void AtacarJugador() override;
+
+    // --- PUENTE DE ANIMACIÓN ---
+    UPROPERTY(BlueprintReadOnly, Category = "Animacion")
+    float VelocidadMovimiento;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Animacion")
+    bool bEstaAtacando;
 
 protected:
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
+    virtual void Tick(float DeltaTime) override;
 
 private:
-	// 3. ENCAPSULAMIENTO: Estas variables y funciones son privadas. 
-	// Solo el Pustulento sabe cómo funciona su veneno.
+    // --- VARIABLES DE LÓGICA (ENCAPSULADAS) ---
+    AActor* DanteEnvenenado; // ESTA ERA LA QUE FALTABA
+    FTimerHandle TimerHandle_ResetAnim;
+    FTimerHandle TemporizadorVeneno;
 
-	// Patrón Observador: Funciones que "escuchan" cuando Dante entra o sale
-	UFUNCTION()
-	void AlEntrarAlAura(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+    // Patrón Observador (Delegates)
+    UFUNCTION()
+    void AlEntrarAlAura(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	UFUNCTION()
-	void AlSalirDelAura(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+    UFUNCTION()
+    void AlSalirDelAura(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	// Función privada que hace el daño real
-	void AplicarVeneno();
-
-	// Herramientas internas
-	FTimerHandle TemporizadorVeneno;
-	AActor* DanteEnvenenado;
+    void AplicarVeneno();
 };
