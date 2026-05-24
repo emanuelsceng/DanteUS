@@ -48,7 +48,9 @@ public:
     // Daño que inflige este enemigo (2 puntos para comunes)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Enemigo")
     float DanoAtaque;
-
+    // Ajuste de altura al morir para evitar que el cadáver traspase el suelo
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combate|Animacion")
+    float DesfaseZMuerte = 0.0f;
 	// Componente para detectar a Dante
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dante | IA")
     UPawnSensingComponent* SensorVision;

@@ -5,7 +5,7 @@
 #include "Perception/PawnSensingComponent.h"
 #include "AIController.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "GameFramework/CharacterMovementComponent.h"
 // Sets default values
 AEnemyBase::AEnemyBase()
 {
@@ -19,7 +19,7 @@ AEnemyBase::AEnemyBase()
     //distancia del ataque
     DistanciaAtaque = 120.0f;
 
-
+    DesfaseZMuerte = 0.0f;
     // Inicializamos el patrón de estado
     EstadoActual = EEstadoEnemigo::Inactivo;
 
@@ -77,8 +77,11 @@ void AEnemyBase::Tick(float DeltaTime)
             }
             else
             {
-                // Sigue moviéndose hacia Dante
-                if (ControladorIA) ControladorIA->MoveToActor(ObjetivoActual, 15.0f);
+                // CORRECCIÓN DE SEGURIDAD: Validamos el controlador antes de mover para evitar crashes externos
+                if (ControladorIA)
+                {
+                    ControladorIA->MoveToActor(ObjetivoActual, 15.0f);
+                }
             }
         }
         break;
@@ -159,15 +162,37 @@ void AEnemyBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 // Función que se activa cuando Dante golpea al enemigo
 float AEnemyBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+    // Si ya está muerto, ignoramos cualquier daño extra inmediatamente
+    if (EstadoActual == EEstadoEnemigo::Muerto) return 0.0f;
+
     float DamageToApply = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
     // Restamos la salud
     Salud -= DamageToApply;
     //
-    if (Salud <= 0.0f && EstadoActual != EEstadoEnemigo::Muerto)
+    if (Salud <= 0.0f)
     {
-        EstadoActual = EEstadoEnemigo::Muerto; // Transición final
-        Morir();
+        EstadoActual = EEstadoEnemigo::Muerto; // Esto activa la animación en tu ABP
+
+        //Detenemos cualquier ataque o animación forzada que esté reproduciendo
+        if (GetMesh() && GetMesh()->GetAnimInstance())
+        {
+            GetMesh()->GetAnimInstance()->StopAllMontages(0.1f);
+        }
+
+        // Detenemos su IA y colisiones para que no siga peleando mientras cae
+        if (GetCharacterMovement()) GetCharacterMovement()->DisableMovement();
+        SetActorEnableCollision(false);
+
+        // Modifica la altura visual de la malla usando la variable del .h
+        if (GetMesh())
+        {
+            GetMesh()->AddLocalOffset(FVector(0.0f, 0.0f, DesfaseZMuerte));
+        }
+
+        // PROGRAMAMOS LA DESTRUCCIÓN PARA DENTRO DE 15 SEGUNDOS
+        FTimerHandle TimerMuerte;
+        GetWorldTimerManager().SetTimer(TimerMuerte, this, &AEnemyBase::Morir, 15.0f, false);
     }
 
     return DamageToApply;
