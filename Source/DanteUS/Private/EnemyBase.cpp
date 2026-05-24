@@ -192,7 +192,7 @@ float AEnemyBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 
         // PROGRAMAMOS LA DESTRUCCIÓN PARA DENTRO DE 15 SEGUNDOS
         FTimerHandle TimerMuerte;
-        GetWorldTimerManager().SetTimer(TimerMuerte, this, &AEnemyBase::Morir, 15.0f, false);
+        GetWorldTimerManager().SetTimer(TimerMuerte, this, &AEnemyBase::Morir, TiempoDesaparicion, false);
     }
 
     return DamageToApply;

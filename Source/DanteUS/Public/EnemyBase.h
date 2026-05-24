@@ -51,6 +51,11 @@ public:
     // Ajuste de altura al morir para evitar que el cadáver traspase el suelo
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combate|Animacion")
     float DesfaseZMuerte = 0.0f;
+
+    // Tiempo que el cadáver se queda en el suelo antes de llamar a Morir()
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combate|Animacion")
+    float TiempoDesaparicion = 15.0f;
+
 	// Componente para detectar a Dante
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dante | IA")
     UPawnSensingComponent* SensorVision;
