@@ -222,6 +222,20 @@ void ADanteUSCharacter::ProcesarMuerte()
 
 	// Llamamos al evento que dispara la animación en el Blueprint
 	OnDanteDie();
+	//LÓGICA DEL MEGÁFONO A LOS ENEMIGOS
+	// Buscamos a TODOS los enemigos en el nivel
+	TArray<AActor*> EnemigosEnMapa;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemyBase::StaticClass(), EnemigosEnMapa);
+
+	// Le avisamos a cada uno que Dante ya fue derrotado
+	for (AActor* EnemigoActor : EnemigosEnMapa)
+	{
+		AEnemyBase* Enemigo = Cast<AEnemyBase>(EnemigoActor);
+		if (Enemigo)
+		{
+			Enemigo->JugadorDerrotado();
+		}
+	}
 }
 
 
