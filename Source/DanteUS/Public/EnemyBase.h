@@ -48,6 +48,13 @@ public:
     // Daño que inflige este enemigo (2 puntos para comunes)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Enemigo")
     float DanoAtaque;
+    // Ajuste de altura al morir para evitar que el cadáver traspase el suelo
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combate|Animacion")
+    float DesfaseZMuerte = 0.0f;
+
+    // Tiempo que el cadáver se queda en el suelo antes de llamar a Morir()
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combate|Animacion")
+    float TiempoDesaparicion = 15.0f;
 
 	// Componente para detectar a Dante
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dante | IA")
@@ -84,6 +91,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+    UFUNCTION(BlueprintCallable, Category = "Combate | IA")
+    virtual void EjecutarGolpeMelee();
 
 public:	
 	// Called every frame
