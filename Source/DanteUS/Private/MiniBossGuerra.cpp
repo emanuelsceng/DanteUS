@@ -7,6 +7,8 @@
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+
 
 AMiniBossGuerra::AMiniBossGuerra()
 {
@@ -37,17 +39,7 @@ void AMiniBossGuerra::AtacarJugador()
 			PlayAnimMontage(MontageAtaque);
 		}
 
-		// 1. ATAQUE COMÚN (Golpe de Maza)
-		if (ObjetivoActual)
-		{
-			// Aplicamos los 5 puntos de daño a Dante
-			UGameplayStatics::ApplyDamage(ObjetivoActual, DanoAtaque, GetController(), this, UDamageType::StaticClass());
-		}
-
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("Comandante: ¡Golpe Normal!"));
-
 		ContadorAtaques++;
-
 		// Usamos el mismo Timer base para volver a perseguir
 		GetWorldTimerManager().SetTimer(TemporizadorAtaque, this, &AMiniBossGuerra::FinalizarAtaque, 1.5f, false);
 	}
@@ -61,6 +53,7 @@ void AMiniBossGuerra::AtacarJugador()
 		ContadorAtaques = 0; // Reiniciamos el patrón de ataques
 	}
 }
+
 
 // ---------------------------------------------------------
 // EL ATAQUE ESPECIAL
@@ -94,7 +87,15 @@ void AMiniBossGuerra::DetonarOndaChoque()
 	// Hacemos aparecer la explosión 
 	if (FX_ExplosionFinal)
 	{
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), FX_ExplosionFinal, CentroDeExplosion);
+		// Guardamos el efecto en una variable al crearlo
+		UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), FX_ExplosionFinal, CentroDeExplosion);
+
+		if (ExplosionComp)
+		{
+			// FVector(X, Y, Z). Al poner 0.5f, reducimos su tamaño a la mitad exacta. 
+			// Puedes jugar con este valor (ej. 0.4f o 0.6f) hasta que el hielo coincida con la runa roja.
+			ExplosionComp->SetWorldScale3D(FVector(0.5f));
+		}
 	}
 
 	// Infligimos el daño radial usando las coordenadas que guardamos
