@@ -1,49 +1,158 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+
 
 #include "RecolectorAlmas.h"
-#include "GameFramework/CharacterMovementComponent.h" //reducir velocidad
 #include "Engine/World.h"
+#include "AIController.h"
+#include "Kismet/GameplayStatics.h"
 
 ARecolectorAlmas::ARecolectorAlmas()
 {
+	PrimaryActorTick.bCanEverTick = true;
+
 	SaludMaxima = 75.0f;
 	Salud = SaludMaxima;
-	DanoAtaque = 4.0f; // Daño físico base temporal
-	DistanciaAtaque = 120.0f;
+	DanoAtaque = 8.0f; // Daño del Nivel 4
+
+	// Rangos del jefe
+	DistanciaAtaque = 800.0f;
+	DistanciaHuir = 350.0f;   // Si cruza esta línea, se da la vuelta y huye
 
 	bYaInvocoFantasmas = false;
+	bEstaHuyendo = false;
 	ContadorGolpesRecibidos = 0;
-
-	// Reducir la velocidad máxima de caminata del recolector
-	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
 }
 
 void ARecolectorAlmas::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Reseteamos las variables al iniciar el nivel
 	Salud = SaludMaxima;
 	ContadorGolpesRecibidos = 0;
 	bYaInvocoFantasmas = false;
+	bEstaHuyendo = false;
+
+	APawn* Dante = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	if (Dante)
+	{
+		ObjetivoActual = Dante;
+	}
+}
+
+void ARecolectorAlmas::Tick(float DeltaTime)
+{
+	// Si está muerto, bloqueamos todo
+	if (EstadoActual == EEstadoEnemigo::Muerto)
+	{
+		Super::Tick(DeltaTime);
+		return;
+	}
+
+	if (ObjetivoActual)
+	{
+		float Distancia = FVector::Dist(GetActorLocation(), ObjetivoActual->GetActorLocation());
+
+		// 1. LÓGICA DE HUIDA (Dante muy cerca y el jefe no está en media animación de disparo)
+		if (Distancia < DistanciaHuir && EstadoActual != EEstadoEnemigo::Atacando)
+		{
+			bEstaHuyendo = true;
+
+			AAIController* ControladorIA = Cast<AAIController>(GetController());
+			if (ControladorIA)
+			{
+				// Calculamos la ruta de escape dando la espalda a Dante
+				FVector DireccionHuir = GetActorLocation() - ObjetivoActual->GetActorLocation();
+				DireccionHuir.Z = 0.0f;
+				DireccionHuir.Normalize();
+
+				FVector PuntoEscape = GetActorLocation() + (DireccionHuir * 600.0f);
+				ControladorIA->MoveToLocation(PuntoEscape, 50.0f);
+			}
+
+			// TRUCO DE HERENCIA: Engañamos a EnemyBase poniéndolo inactivo 1 frame para que no interrumpa la huida
+			EEstadoEnemigo EstadoTemporal = EstadoActual;
+			EstadoActual = EEstadoEnemigo::Inactivo;
+			Super::Tick(DeltaTime);
+			EstadoActual = EstadoTemporal;
+
+			// Salimos para no forzar la mirada y permitir que la animación de espalda funcione
+			return;
+		}
+		else
+		{
+			bEstaHuyendo = false;
+		}
+
+		// 2. LÓGICA DE SEGUIR CON LA MIRADA (Solo si no está huyendo y no está disparando)
+		if (!bEstaHuyendo && EstadoActual != EEstadoEnemigo::Atacando)
+		{
+			FVector DireccionADante = ObjetivoActual->GetActorLocation() - GetActorLocation();
+			DireccionADante.Z = 0.0f;
+
+			if (!DireccionADante.IsNearlyZero())
+			{
+				FRotator RotacionObjetivo = DireccionADante.Rotation();
+				FRotator RotacionSuave = FMath::RInterpTo(GetActorRotation(), RotacionObjetivo, DeltaTime, 6.0f);
+				SetActorRotation(RotacionSuave);
+			}
+		}
+	}
+
+	// 3. EJECUTAR EL CEREBRO NORMAL DE PERSECUCIÓN Y ATAQUE
+	Super::Tick(DeltaTime);
 }
 
 float ARecolectorAlmas::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	// 1. PRIMERO HACEMOS NUESTRA LÓGICA ANTES DE QUE ENEMYBASE NOS RESTE LA VIDA
-	if (DamageAmount > 0 && EstadoActual != EEstadoEnemigo::Muerto)
+	if (DamageAmount > 0.0f && EstadoActual != EEstadoEnemigo::Muerto)
 	{
 		ContadorGolpesRecibidos++;
 
-		// Si Dante logra acertar el 7mo golpe y no se ha invocado antes
 		if (ContadorGolpesRecibidos == 7 && !bYaInvocoFantasmas)
 		{
 			InvocarFantasmasErrantes();
 		}
 	}
 
-	// 2. AHORA SÍ, DEJAMOS QUE LA CLASE PADRE HAGA SU TRABAJO (Restar salud y matar si llega a 0)
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
+void ARecolectorAlmas::AtacarJugador()
+{
+	if (!ObjetivoActual) return;
+
+	// Forzamos un giro de encare exacto en el frame donde decide disparar
+	FVector DireccionADante = ObjetivoActual->GetActorLocation() - GetActorLocation();
+	DireccionADante.Z = 0.0f;
+	SetActorRotation(DireccionADante.Rotation());
+
+	if (MontageAtaque && GetMesh()->GetAnimInstance())
+	{
+		GetMesh()->GetAnimInstance()->Montage_Play(MontageAtaque);
+	}
+
+	FTimerHandle TimerProyectil;
+	GetWorldTimerManager().SetTimer(TimerProyectil, this, &ARecolectorAlmas::LanzarMagiaOscura, 0.5f, false);
+
+	GetWorldTimerManager().SetTimer(TemporizadorAtaque, this, &AEnemyBase::FinalizarAtaque, 2.0f, false);
+}
+
+void ARecolectorAlmas::LanzarMagiaOscura()
+{
+	if (!ClaseProyectilMagia || !ObjetivoActual) return;
+
+	// El proyectil sale desde el frente del Recolector de Almas
+	FVector PosicionSpawn = GetActorLocation() + (GetActorForwardVector() * 60.0f) + FVector(0.0f, 0.0f, 60.0f);
+
+	FVector Direccion = ObjetivoActual->GetActorLocation() - PosicionSpawn;
+	Direccion.Normalize();
+	FRotator Rotacion = Direccion.Rotation();
+
+	FActorSpawnParameters Params;
+	Params.Owner = this;
+	Params.Instigator = GetInstigator();
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	GetWorld()->SpawnActor<AActor>(ClaseProyectilMagia, PosicionSpawn, Rotacion, Params);
 }
 
 void ARecolectorAlmas::InvocarFantasmasErrantes()
@@ -52,36 +161,20 @@ void ARecolectorAlmas::InvocarFantasmasErrantes()
 
 	if (ClaseFantasmaErrante && GetWorld())
 	{
-		// Obtenemos hacia dónde está mirando el jefe y cuál es su lado derecho
 		FVector Adelante = GetActorForwardVector();
 		FVector Derecha = GetActorRightVector();
-
-		// El punto base será 200 centímetros justo enfrente del Recolector
 		FVector PosicionBaseFrontal = GetActorLocation() + (Adelante * 200.0f);
 
-		// Configuramos el Spawn para que forzosamente aparezcan aunque choquen un poco con el suelo
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-		// Bucle para crear la barrera de 4 fantasmas
 		for (int i = 0; i < 4; i++)
 		{
-			// Fórmula matemática para separarlos en fila: -150, -50, 50, 150 centímetros
 			float OffsetLateral = (i - 1.5f) * 100.0f;
-
-			// Posición final de cada fantasma en la fila
 			FVector PosicionFinal = PosicionBaseFrontal + (Derecha * OffsetLateral);
-
-			// Hacemos que nazcan mirando en la misma dirección que el Jefe (hacia Dante)
 			FRotator RotacionMismaQueJefe = GetActorRotation();
 
-			// ¡Spawneamos al Fantasma!
 			GetWorld()->SpawnActor<AActor>(ClaseFantasmaErrante, PosicionFinal, RotacionMismaQueJefe, SpawnParams);
-		}
-
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple, TEXT("¡El Recolector ha levantado su barrera de fantasmas!"));
 		}
 	}
 }

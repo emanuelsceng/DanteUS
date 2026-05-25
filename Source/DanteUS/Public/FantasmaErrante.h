@@ -16,6 +16,9 @@ class DANTEUS_API AFantasmaErrante : public AEnemyBase
 public:
 	AFantasmaErrante();
 
+	//para que siga con la mirada
+	virtual void Tick(float DeltaTime) override;
+
 protected:
 	virtual void BeginPlay() override;
 

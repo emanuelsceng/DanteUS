@@ -1,5 +1,6 @@
 #include "FantasmaErrante.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"//para seguir con la mirada y deje usar UGameplayStatics en el super::beginplay();
 #include "TimerManager.h"
 
 AFantasmaErrante::AFantasmaErrante()
@@ -21,6 +22,14 @@ AFantasmaErrante::AFantasmaErrante()
 void AFantasmaErrante::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Buscamos a Dante directamente para poder seguirlo con la mirada
+	APawn* Dante = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	if (Dante)
+	{
+		ObjetivoActual = Dante;
+		EstadoActual = EEstadoEnemigo::Persiguiendo;
+	}
 }
 
 float AFantasmaErrante::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -67,4 +76,26 @@ void AFantasmaErrante::RestaurarVulnerabilidad()
 {
 	bEsInvulnerable = false;
 	OnInvulnerabilidadTerminada();// Se llama justo cuando bEsInvulnerable es true
+}
+
+//Funcion para seguir con la mirada
+void AFantasmaErrante::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	// Solo mira a Dante si está vivo y tiene objetivo
+	if (EstadoActual == EEstadoEnemigo::Muerto) return;
+	if (!ObjetivoActual) return;
+
+	// Misma lógica que el Recolector de Almas
+	FVector DireccionADante = ObjetivoActual->GetActorLocation() - GetActorLocation();
+	DireccionADante.Z = 0.0f;
+
+	if (!DireccionADante.IsNearlyZero())
+	{
+		FRotator RotacionObjetivo = DireccionADante.Rotation();
+		FRotator RotacionSuave = FMath::RInterpTo(
+			GetActorRotation(), RotacionObjetivo, DeltaTime, 6.0f);
+		SetActorRotation(RotacionSuave);
+	}
 }

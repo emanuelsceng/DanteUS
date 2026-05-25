@@ -1,4 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 #pragma once
 
 #include "CoreMinimal.h"
@@ -13,22 +12,38 @@ class DANTEUS_API ARecolectorAlmas : public AEnemyBase
 public:
 	ARecolectorAlmas();
 
+	// Sobrescribimos el Tick para manejar la visión y la huida
+	virtual void Tick(float DeltaTime) override;
+
 protected:
 	virtual void BeginPlay() override;
 
 public:
-	// Sobrescribimos TakeDamage para llevar la cuenta de los golpes
+	// Sistema de 7 golpes
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
+	// Magia Oscura
+	virtual void AtacarJugador() override;
+
 protected:
-	// La clase del Fantasma Errante que asignaremos en el Blueprint
+	// --- HABILIDAD DE INVOCACIÓN ---
 	UPROPERTY(EditAnywhere, Category = "Recolector | Habilidades")
 	TSubclassOf<AActor> ClaseFantasmaErrante;
 
-	// Variables para la lógica de invocación
 	bool bYaInvocoFantasmas;
 	int32 ContadorGolpesRecibidos;
 
-	// Función que calcula la fila y spawnea a los fantasmas
 	void InvocarFantasmasErrantes();
+
+	// --- ATAQUE A DISTANCIA Y COMPORTAMIENTO ---
+	UPROPERTY(EditAnywhere, Category = "Recolector | Magia Oscura")
+	TSubclassOf<AActor> ClaseProyectilMagia;
+
+	UPROPERTY(EditAnywhere, Category = "Recolector | Magia Oscura")
+	float DistanciaHuir;
+
+	// Control interno para saber si está escapando
+	bool bEstaHuyendo;
+
+	void LanzarMagiaOscura();
 };
