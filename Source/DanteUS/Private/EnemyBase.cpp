@@ -99,6 +99,9 @@ void AEnemyBase::Tick(float DeltaTime)
 
 void AEnemyBase::AlVerJugador(APawn* JugadorVisto)
 {
+    // Si Dante ya fue derrotado, ignoramos todo lo que vean nuestros ojos
+    if (bDanteDerrotado) return;
+
     // Solo reacciona si está inactivo (Patrón Observer)
     if (EstadoActual == EEstadoEnemigo::Inactivo && JugadorVisto != nullptr)
     {
@@ -122,6 +125,8 @@ void AEnemyBase::AtacarJugador()
 // 2. LA NUEVA FUNCIÓN HEREDABLE
 void AEnemyBase::EjecutarGolpeMelee()
 {
+    // Si Dante ya murió, cancelamos el golpe en el aire
+    if (bDanteDerrotado) return;
     if (ObjetivoActual)
     {
         // Distancia matemática en el momento exacto de la animación
@@ -206,4 +211,33 @@ void AEnemyBase::Morir()
     // Limpieza de memoria dinámica 
     // Esto hace que el enemigo desaparezca del nivel
     Destroy(); 
+}
+
+//Lógica para detener al enemigo cuando Dante muere
+void AEnemyBase::JugadorDerrotado()
+{
+    // Solo nos importa detener a los enemigos que siguen vivos
+    if (EstadoActual != EEstadoEnemigo::Muerto)
+    {
+        // CERRAMOS EL CANDADO
+        bDanteDerrotado = true;
+        // 1. Olvidamos a Dante
+        ObjetivoActual = nullptr;
+
+        // 2. Pasamos a Inactivo (Idle) para que el AnimGraph cambie su pose
+        EstadoActual = EEstadoEnemigo::Inactivo;
+
+        // 3. Detenemos cualquier animación de ataque a medias
+        if (GetMesh() && GetMesh()->GetAnimInstance())
+        {
+            GetMesh()->GetAnimInstance()->StopAllMontages(0.1f);
+        }
+
+        // 4. Frenamos en seco su movimiento en el motor de navegación
+        AAIController* ControladorIA = Cast<AAIController>(GetController());
+        if (ControladorIA) ControladorIA->StopMovement();
+
+        // 5. Limpiamos su temporizador de ataque por si estaba a punto de golpear
+        GetWorldTimerManager().ClearTimer(TemporizadorAtaque);
+    }
 }

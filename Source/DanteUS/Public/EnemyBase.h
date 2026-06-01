@@ -67,7 +67,6 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | IA")
     class UAnimMontage* MontageAtaque;
 
-
     APawn* ObjetivoActual;
 
     FTimerHandle TemporizadorAtaque;
@@ -84,9 +83,14 @@ public:
     void AlVerJugador(APawn* JugadorVisto);
 
     virtual void AtacarJugador();
-    void FinalizarAtaque(); // Reemplaza a ResetearAtaque
+    void FinalizarAtaque(); 
 
-
+    // Función que llamará Dante cuando muera
+    UFUNCTION(BlueprintCallable, Category = "Combate | IA")
+    void JugadorDerrotado();
+    // Candado maestro para saber si el combate terminó
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dante | IA")
+    bool bDanteDerrotado = false;
 
 protected:
 	// Called when the game starts or when spawned
