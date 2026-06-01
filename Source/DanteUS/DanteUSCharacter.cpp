@@ -14,6 +14,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "EnemyBase.h"
 #include "Components/BoxComponent.h"
+#include "SistemaJuegoFacade.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -235,6 +236,15 @@ void ADanteUSCharacter::ProcesarMuerte()
 		{
 			Enemigo->JugadorDerrotado();
 		}
+	}
+	// Buscamos el facade del sistema de juego para avisarle que Dante fue derrotado (y así centralizar la llamada a UI, Audio, etc)
+	AActor* FachadaActor = UGameplayStatics::GetActorOfClass(GetWorld(), ASistemaJuegoFacade::StaticClass());
+	ASistemaJuegoFacade* Fachada = Cast<ASistemaJuegoFacade>(FachadaActor);
+
+	if (Fachada)
+	{
+		// Centralizamos la llamada. Ocultamos toda la complejidad de la UI y el Audio.
+		Fachada->DanteDerrotado();
 	}
 }
 
