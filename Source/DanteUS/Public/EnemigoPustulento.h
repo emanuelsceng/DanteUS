@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "CoreMinimal.h"
 #include "EnemyBase.h"
@@ -12,13 +12,13 @@ class DANTEUS_API AEnemigoPustulento : public AEnemyBase
 public:
     AEnemigoPustulento();
 
-    // Componentes y Lógica
+    // Componentes y Lï¿½gica
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Peste | Componentes")
     class USphereComponent* AuraVeneno;
 
     virtual void AtacarJugador() override;
 
-    // --- PUENTE DE ANIMACIÓN ---
+    // --- PUENTE DE ANIMACIï¿½N ---
     UPROPERTY(BlueprintReadOnly, Category = "Animacion")
     float VelocidadMovimiento;
 
@@ -30,12 +30,12 @@ protected:
     virtual void Tick(float DeltaTime) override;
 
 private:
-    // --- VARIABLES DE LÓGICA (ENCAPSULADAS) ---
+    // --- VARIABLES DE Lï¿½GICA (ENCAPSULADAS) ---
     AActor* DanteEnvenenado; // ESTA ERA LA QUE FALTABA
     FTimerHandle TimerHandle_ResetAnim;
     FTimerHandle TemporizadorVeneno;
 
-    // Patrón Observador (Delegates)
+    // Patrï¿½n Observador (Delegates)
     UFUNCTION()
     void AlEntrarAlAura(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
@@ -43,4 +43,6 @@ private:
     void AlSalirDelAura(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
     void AplicarVeneno();
+
+ 
 };

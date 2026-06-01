@@ -1,4 +1,4 @@
-#include "EnemigoPustulento.h"
+ï»¿#include "EnemigoPustulento.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
@@ -8,7 +8,7 @@ AEnemigoPustulento::AEnemigoPustulento()
 {
     PrimaryActorTick.bCanEverTick = true;
 
-    // Inicialización de variables
+    // Inicializaciï¿½n de variables
     DanteEnvenenado = nullptr;
     bEstaAtacando = false;
     VelocidadMovimiento = 0.0f;
@@ -18,14 +18,14 @@ AEnemigoPustulento::AEnemigoPustulento()
     Salud = SaludMaxima;
     DanoAtaque = 5.0f;
 
-    // Construcción del Aura
+    // Construcciï¿½n del Aura
     AuraVeneno = CreateDefaultSubobject<USphereComponent>(TEXT("AuraVeneno"));
     AuraVeneno->SetupAttachment(RootComponent);
     AuraVeneno->InitSphereRadius(200.0f);
     AuraVeneno->SetCollisionProfileName(TEXT("Trigger"));
     if (GetCharacterMovement())
     {
-        GetCharacterMovement()->MaxWalkSpeed = 450.0f; // Sube este valor para ir más rápido
+        GetCharacterMovement()->MaxWalkSpeed = 450.0f; // Sube este valor para ir mï¿½s rï¿½pido
     }
 }
 
@@ -47,7 +47,7 @@ void AEnemigoPustulento::AtacarJugador()
     Super::AtacarJugador();
     bEstaAtacando = true;
 
-    // Resetear animación
+    // Resetear animaciï¿½n
     GetWorldTimerManager().SetTimer(TimerHandle_ResetAnim, [this]() {
         bEstaAtacando = false;
         }, 1.0f, false);
@@ -75,13 +75,14 @@ void AEnemigoPustulento::AplicarVeneno()
 {
     if (DanteEnvenenado)
     {
-        // Aplicar el daño
+        // Aplicar el daï¿½o
         UGameplayStatics::ApplyDamage(DanteEnvenenado, 2.0f, GetInstigatorController(), this, UDamageType::StaticClass());
 
-        // --- RETROALIMENTACIÓN VISUAL (Feedback) ---
-        // Esto aparecerá en tu pantalla mientras estés dentro del aura.
-        // El primer parámetro es el Key (pon -1 para que no reemplace el anterior)
+        // --- RETROALIMENTACIï¿½N VISUAL (Feedback) ---
+        // Esto aparecerï¿½ en tu pantalla mientras estï¿½s dentro del aura.
+        // El primer parï¿½metro es el Key (pon -1 para que no reemplace el anterior)
         // El segundo es el tiempo, el tercero es el color
-        GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, TEXT("¡VENENO ACTIVADO! Daño recibido..."));
+        GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, TEXT("ï¿½VENENO ACTIVADO! Daï¿½o recibido..."));
     }
 }
+

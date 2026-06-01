@@ -40,6 +40,9 @@ void AProyectilBase::Disparar(FVector Direccion, float Velocidad, float Gravedad
 	ComponenteMovimiento->ProjectileGravityScale = Gravedad;
 	ComponenteMovimiento->Velocity = Direccion * Velocidad;
 	ComponenteMovimiento->Activate(true);
+
+	// ¡NUEVA LÍNEA! Le avisa al Blueprint que la bala acaba de ser reciclada
+	OnProyectilDisparado();
 }
 
 void AProyectilBase::DesactivarProyectil()

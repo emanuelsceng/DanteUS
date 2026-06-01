@@ -50,5 +50,7 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dante | Eventos")
 	void OnImpactoEspecial(AActor* ActorGolpeado, FVector UbicacionImpacto);
 
-
+	// ¡NUEVO EVENTO PUENTE! Para reiniciar partículas al reutilizar la bala en el Object Pool
+	UFUNCTION(BlueprintImplementableEvent, Category = "Dante | Eventos")
+	void OnProyectilDisparado();
 };
