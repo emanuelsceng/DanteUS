@@ -13,6 +13,7 @@
 
 #include "CoreMinimal.h"
 #include "EnemyBase.h" // Clase base de todos los enemigos
+#include "Animation/AnimInstance.h"
 #include "GuardianVampirico.generated.h"
 
 UCLASS()
@@ -30,11 +31,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante|Enemigo|Vampirico")
 	float RegeneracionPorGolpe = 4.0f;
 
+	// En la sección pública:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante|Enemigo|Animaciones")
+	UAnimMontage* MontajeMuerte;
+
 protected:
 	// Se ejecuta cuando el enemigo aparece en el nivel
 	virtual void BeginPlay() override;
 
 public:
+	virtual void Tick(float DeltaTime) override;
 	// Sobrescribimos el ataque para agregar la regeneración vampírica mejorada
 	virtual void AtacarJugador() override;
+	virtual void Morir() override;
 };

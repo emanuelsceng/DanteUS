@@ -3,7 +3,7 @@
 
 // Dante: El Último Sello - Nivel 3
 // Implementación del Guardián Vampírico
-
+#include "AIController.h"
 #include "GuardianVampirico.h"
 
 AGuardianVampirico::AGuardianVampirico()
@@ -33,9 +33,19 @@ void AGuardianVampirico::BeginPlay()
     // Activa el sensor de visión y vincula AlVerJugador
     Super::BeginPlay();
 }
+void AGuardianVampirico::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+}
 
 void AGuardianVampirico::AtacarJugador()
 {
+    // Detener movimiento al atacar
+    AAIController* ControladorIA = Cast<AAIController>(GetController());
+    if (ControladorIA)
+    {
+        ControladorIA->StopMovement();
+    }
     // Ejecutamos el ataque normal heredado de EnemyBase
     // Aplica DanoAtaque (10) a Dante y activa el cooldown de 1.5 segundos
     Super::AtacarJugador();
@@ -49,4 +59,23 @@ void AGuardianVampirico::AtacarJugador()
     {
         GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Purple, TEXT("¡Guardián Vampírico conectó un golpe pesado!"));
     }
+}
+
+void AGuardianVampirico::Morir()
+{
+    // Reproducir animacion de muerte
+    UAnimInstance* AnimInstancia = GetMesh()->GetAnimInstance();
+    if (AnimInstancia && MontajeMuerte)
+    {
+        AnimInstancia->Montage_Play(MontajeMuerte);
+    }
+
+    // Esperamos que termine la animacion antes de destruir
+    FTimerHandle TimerMuerte;
+    GetWorldTimerManager().SetTimer(
+        TimerMuerte,
+        [this]() { Super::Morir(); },
+        2.0f,
+        false
+    );
 }
