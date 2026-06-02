@@ -12,13 +12,13 @@ class DANTEUS_API AEnemigoPustulento : public AEnemyBase
 public:
     AEnemigoPustulento();
 
-    // Componentes y L�gica
+    // Componentes y L gica
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Peste | Componentes")
     class USphereComponent* AuraVeneno;
 
     virtual void AtacarJugador() override;
 
-    // --- PUENTE DE ANIMACI�N ---
+    // --- PUENTE DE ANIMACI N ---
     UPROPERTY(BlueprintReadOnly, Category = "Animacion")
     float VelocidadMovimiento;
 
@@ -30,12 +30,12 @@ protected:
     virtual void Tick(float DeltaTime) override;
 
 private:
-    // --- VARIABLES DE L�GICA (ENCAPSULADAS) ---
+    // --- VARIABLES DE L GICA (ENCAPSULADAS) ---
     AActor* DanteEnvenenado; // ESTA ERA LA QUE FALTABA
     FTimerHandle TimerHandle_ResetAnim;
     FTimerHandle TemporizadorVeneno;
 
-    // Patr�n Observador (Delegates)
+    // Patr n Observador (Delegates)
     UFUNCTION()
     void AlEntrarAlAura(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
@@ -44,5 +44,5 @@ private:
 
     void AplicarVeneno();
 
- 
+
 };

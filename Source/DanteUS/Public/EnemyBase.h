@@ -26,11 +26,11 @@ enum class EEstadoEnemigo : uint8
 UCLASS()
 class DANTEUS_API AEnemyBase : public ACharacter
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
-	AEnemyBase();
+    // Sets default values for this character's properties
+    AEnemyBase();
 
 
     // Variable que guarda el Estado Actual
@@ -56,7 +56,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combate|Animacion")
     float TiempoDesaparicion = 15.0f;
 
-	// Componente para detectar a Dante
+    // Componente para detectar a Dante
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dante | IA")
     UPawnSensingComponent* SensorVision;
 
@@ -78,12 +78,12 @@ public:
     // Función para manejar la muerte y limpieza de memoria
     virtual void Morir();
 
-	// Función que se activa cuando el enemigo ve a Dante
+    // Función que se activa cuando el enemigo ve a Dante
     UFUNCTION()
     void AlVerJugador(APawn* JugadorVisto);
 
     virtual void AtacarJugador();
-    void FinalizarAtaque(); 
+    void FinalizarAtaque();
 
     // Función que llamará Dante cuando muera
     UFUNCTION(BlueprintCallable, Category = "Combate | IA")
@@ -93,16 +93,16 @@ public:
     bool bDanteDerrotado = false;
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+    // Called when the game starts or when spawned
+    virtual void BeginPlay() override;
     UFUNCTION(BlueprintCallable, Category = "Combate | IA")
     virtual void EjecutarGolpeMelee();
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+public:
+    // Called every frame
+    virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+    // Called to bind functionality to input
+    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 };

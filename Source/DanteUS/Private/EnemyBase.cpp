@@ -9,15 +9,15 @@
 // Sets default values
 AEnemyBase::AEnemyBase()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+    // Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+    PrimaryActorTick.bCanEverTick = true;
 
-	// Valores iniciales de salud para "Enemigo Común" 
-	SaludMaxima = 20.0f; 
-		Salud = SaludMaxima;
-	DanoAtaque = 10.0f; 
+    // Valores iniciales de salud para "Enemigo Común" 
+    SaludMaxima = 20.0f;
+    Salud = SaludMaxima;
+    DanoAtaque = 10.0f;
 
-	DanoAtaque = 2.0f; 
+    DanoAtaque = 2.0f;
 
     //distancia del ataque
     DistanciaAtaque = 120.0f;
@@ -36,10 +36,10 @@ AEnemyBase::AEnemyBase()
 // Called when the game starts or when spawned
 void AEnemyBase::BeginPlay()
 {
-	Super::BeginPlay();
-	
+    Super::BeginPlay();
 
-	// Vinculamos la función AlVerJugador al evento OnSeePawn del SensorVision
+
+    // Vinculamos la función AlVerJugador al evento OnSeePawn del SensorVision
     if (SensorVision)
     {
         SensorVision->OnSeePawn.AddDynamic(this, &AEnemyBase::AlVerJugador);
@@ -163,7 +163,7 @@ void AEnemyBase::FinalizarAtaque()
 // Called to bind functionality to input
 void AEnemyBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+    Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
 
@@ -210,7 +210,7 @@ void AEnemyBase::Morir()
 {
     // Limpieza de memoria dinámica 
     // Esto hace que el enemigo desaparezca del nivel
-    Destroy(); 
+    Destroy();
 }
 
 //Lógica para detener al enemigo cuando Dante muere

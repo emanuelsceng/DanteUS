@@ -145,7 +145,7 @@ void AMiniBossGuerra::Morir()
 	TArray<AActor*> EnemigosEnElMapa;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemyBase::StaticClass(), EnemigosEnElMapa);
 
-	
+
 	for (AActor* ActorEnemigo : EnemigosEnElMapa)
 	{
 		AEnemyBase* Enemigo = Cast<AEnemyBase>(ActorEnemigo);
