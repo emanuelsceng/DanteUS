@@ -3,8 +3,10 @@
 
 // Dante: El Último Sello - Nivel 3
 // Implementación del Guardián Vampírico
-#include "AIController.h"
-#include "GuardianVampirico.h"
+#include "GuardianVampirico.h" // ESTO DEBE SER LA LÍNEA 1
+#include "AIController.h"       // Luego los demás
+#include "Kismet/GameplayStatics.h"
+
 
 AGuardianVampirico::AGuardianVampirico()
 {
