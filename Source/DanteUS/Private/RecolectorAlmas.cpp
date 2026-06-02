@@ -31,18 +31,28 @@ void ARecolectorAlmas::BeginPlay()
 	bYaInvocoFantasmas = false;
 	bEstaHuyendo = false;
 
+	// CAMBIO 1: El FantasmaErrante arrancaba directo en Persiguiendo.
+	// El RecolectorAlmas original no cambiaba de estado en BeginPlay,
+	// solo guardaba el objetivo. Mantenemos eso — arranca en Inactivo
+	// y el sensor de visión de EnemyBase lo activará cuando vea a Dante.
 	APawn* Dante = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	if (Dante)
 	{
 		ObjetivoActual = Dante;
+		// Lo ponemos directo en Persiguiendo igual que el original
+		// porque el RecolectorAlmas siempre persigue desde el inicio
+		SetEstado(GetEstadoPersiguiendo());
 	}
 }
 
 void ARecolectorAlmas::Tick(float DeltaTime)
 {
 	// Si está muerto, bloqueamos todo
-	if (EstadoActual == EEstadoEnemigo::Muerto)
+	//cambio 1 (State) Antes (EstadoActual == EEstadoEnemigo::Muerto)
+	if (EstadoActual.GetObject() == GetEstadoMuerto().GetObject())
 	{
+		// Llamamos al Tick del AActor directamente, saltando EnemyBase::Tick()
+	   // para que el estado Muerto no ejecute lógica de IA.
 		Super::Tick(DeltaTime);
 		return;
 	}
@@ -52,7 +62,8 @@ void ARecolectorAlmas::Tick(float DeltaTime)
 		float Distancia = FVector::Dist(GetActorLocation(), ObjetivoActual->GetActorLocation());
 
 		// 1. LÓGICA DE HUIDA (Dante muy cerca y el jefe no está en media animación de disparo)
-		if (Distancia < DistanciaHuir && EstadoActual != EEstadoEnemigo::Atacando)
+		//cambio2 (state) Antes && EEstadoEnemigo::Atacando
+		if (Distancia < DistanciaHuir && EstadoActual.GetObject() != GetEstadoAtacando())
 		{
 			bEstaHuyendo = true;
 
@@ -68,11 +79,13 @@ void ARecolectorAlmas::Tick(float DeltaTime)
 				ControladorIA->MoveToLocation(PuntoEscape, 50.0f);
 			}
 
-			// TRUCO DE HERENCIA: Engañamos a EnemyBase poniéndolo inactivo 1 frame para que no interrumpa la huida
-			EEstadoEnemigo EstadoTemporal = EstadoActual;
-			EstadoActual = EEstadoEnemigo::Inactivo;
-			Super::Tick(DeltaTime);
-			EstadoActual = EstadoTemporal;
+			    //cambio3 (state) 
+				// Ahora simplemente llamamos al Tick del AActor base directamente,
+				// saltando EnemyBase::Tick() que es quien movería la IA.
+				// Así el RecolectorAlmas controla su propio movimiento de huida
+				// sin que EnemyBase::Tick() lo interrumpa.
+				AActor::Tick(DeltaTime);
+
 
 			// Salimos para no forzar la mirada y permitir que la animación de espalda funcione
 			return;
@@ -83,7 +96,8 @@ void ARecolectorAlmas::Tick(float DeltaTime)
 		}
 
 		// 2. LÓGICA DE SEGUIR CON LA MIRADA (Solo si no está huyendo y no está disparando)
-		if (!bEstaHuyendo && EstadoActual != EEstadoEnemigo::Atacando)
+		//cambio4 (state) antes && EstadoActual != EEstadoEnemigo::Atacando
+		if (!bEstaHuyendo && EstadoActual.GetObject() != GetEstadoAtacando().GetObject())
 		{
 			FVector DireccionADante = ObjetivoActual->GetActorLocation() - GetActorLocation();
 			DireccionADante.Z = 0.0f;
@@ -102,8 +116,9 @@ void ARecolectorAlmas::Tick(float DeltaTime)
 }
 
 float ARecolectorAlmas::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
-{
-	if (DamageAmount > 0.0f && EstadoActual != EEstadoEnemigo::Muerto)
+{    
+	//cambio5 (state) antes && EstadoActual != EEstadoEnemigo::Muerto
+	if (DamageAmount > 0.0f && EstadoActual.GetObject() != GetEstadoMuerto().GetObject())
 	{
 		ContadorGolpesRecibidos++;
 

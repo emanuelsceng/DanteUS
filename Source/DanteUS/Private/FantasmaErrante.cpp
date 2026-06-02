@@ -23,19 +23,33 @@ void AFantasmaErrante::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// CAMBIO 1: Ya no asignamos EstadoActual directamente con el UENUM.
+	// Super::BeginPlay() (que es EnemyBase::BeginPlay()) ya hace el SpawnActor
+	// de todos los estados y llama SetEstado(EstadoInactivo).
+	// Solo necesitamos darle el objetivo y forzar la transición a Persiguiendo
+	// usando SetEstado() con el getter, igual que hace el libro con SetState().
+	
 	// Buscamos a Dante directamente para poder seguirlo con la mirada
 	APawn* Dante = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	if (Dante)
 	{
 		ObjetivoActual = Dante;
-		EstadoActual = EEstadoEnemigo::Persiguiendo;
+		// SetEstado() llama a Salir() del Inactivo e Ingresar() del Persiguiendo.
+		// GetEstadoPersiguiendo() es el getter que pusimos en EnemyBase.h.
+		SetEstado(GetEstadoPersiguiendo());
 	}
 }
 
 float AFantasmaErrante::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	// Si ya es invulnerable o está muerto, no recibe daño
-	if (bEsInvulnerable || EstadoActual == EEstadoEnemigo::Muerto)
+	
+	// CAMBIO 2: En lugar de comparar con el UENUM (EEstadoEnemigo::Muerto),
+	// comparamos los punteros de los TScriptInterface usando GetObject().
+	// GetObject() devuelve el UObject* subyacente para poder compararlos.
+	//antes bEsInvulnerable || EstadoActual == EEstadoEnemigo::Muerto antes
+	
+	if (bEsInvulnerable || EstadoActual.GetObject() == GetEstadoMuerto().GetObject()) 
 	{
 		return 0.0f;// Si es invulnerable, devolvemos 0 daño.
 	}
@@ -45,7 +59,9 @@ float AFantasmaErrante::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 
 	//Si después del golpe sigue vivo, procesamos la cuenta de golpes
 	//Contador de golpes. para recordar cuantas veces ha sido atacado
-	if (EstadoActual != EEstadoEnemigo::Muerto)
+	// CAMBIO 3: Misma comparación con GetObject() para verificar si sigue vivo
+	// Antes EstadoActual != EEstadoEnemigo::Muerto 
+	if (EstadoActual.GetObject() != GetEstadoMuerto().GetObject())
 	{
 		ContadorGolpes++;// Incrementamos cada vez que Super::TakeDamage se ejecuta
 
@@ -84,7 +100,9 @@ void AFantasmaErrante::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	// Solo mira a Dante si está vivo y tiene objetivo
-	if (EstadoActual == EEstadoEnemigo::Muerto) return;
+	// CAMBIO 4: Misma comparación con GetObject() en el Tick.
+	//Antes EstadoActual == EEstadoEnemigo::Muerto 
+	if (EstadoActual.GetObject() == GetEstadoMuerto().GetObject()) return; 
 	if (!ObjetivoActual) return;
 
 	// Misma lógica que el Recolector de Almas
