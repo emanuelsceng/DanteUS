@@ -2,55 +2,47 @@
 
 
 #include "EnemySpawner.h"
-#include "Engine/Engine.h"
-// Sets default values
+
 AEnemySpawner::AEnemySpawner()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-    // Creamos la caja de colisión y la hacemos la raíz del objeto
-    ZonaActivacion = CreateDefaultSubobject<UBoxComponent>(TEXT("ZonaActivacion"));
-    RootComponent = ZonaActivacion;
-    ZonaActivacion->SetBoxExtent(FVector(200.0f, 200.0f, 100.0f));
 
-    // Le decimos a la caja que nos avise cuando alguien entre
-    ZonaActivacion->OnComponentBeginOverlap.AddDynamic(this, &AEnemySpawner::AlEntrarEnZona);
+	ZonaActivacion = CreateDefaultSubobject<UBoxComponent>(TEXT("ZonaActivacion"));
+	RootComponent = ZonaActivacion;
+	ZonaActivacion->SetBoxExtent(FVector(200.0f, 200.0f, 100.0f));
 }
 
-// Called when the game starts or when spawned
 void AEnemySpawner::BeginPlay()
 {
 	Super::BeginPlay();
-	
-}
 
-// Called every frame
-void AEnemySpawner::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
+	ZonaActivacion->OnComponentBeginOverlap.AddDynamic(this, &AEnemySpawner::AlEntrarEnZona);
 }
 
 void AEnemySpawner::AlEntrarEnZona(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-    bool bFromSweep, const FHitResult& SweepResult)
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-    // Solo se activa si el que entra es el Jugador (Dante) y si no se ha usado ya
-    if (!bYaSeActivo && OtherActor && OtherActor->ActorHasTag("Player"))
-    {
-        bYaSeActivo = true;
+	// Detectamos al Jugador (Dante) mediante tu Tag original "Player"
+	if (!bYaSeActivo && OtherActor && OtherActor->ActorHasTag("Player"))
+	{
+		if (TiendaLocal)
+		{
+			bYaSeActivo = true;
 
-        for (int32 i = 0; i < Cantidad; i++)
-        {
-            // Cálculo para que aparezcan en fila o ligero arco
-            FVector SpawnPos = GetActorLocation() + FVector(i * 150.0f, 0.0f, 50.0f);
+			for (int32 i = 0; i < Cantidad; i++)
+			{
+				// Tu fórmula original de posicionamiento en fila
+				FVector SpawnPos = GetActorLocation() + FVector(i * 150.0f, 0.0f, 50.0f);
 
-            // usamos la fabrica pasándole la clase del Blueprint (ClaseEnemigoBP) para que tenga cuerpo y malla
-            AEnemyFactory::CrearEnemigo(GetWorld(), TipoA_Spawnear, SpawnPos, GetActorRotation());
-        }
+				// LLAMADA AL FACTORY METHOD: Le pedimos el rol a la tienda instanciada
+				TiendaLocal->SpawnEnemy(RolA_Spawnear, SpawnPos, GetActorRotation());
+			}
 
-        if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("¡Emboscada de la Fábrica activada!"));
-        // Ordenamos al motor que elimine este Spawner del mundo al final de este frame
-        this->Destroy();
-    }
+			this->Destroy();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("EnemySpawner: ¡Peligro! No has asignado la TiendaLocal en este Spawner del mapa."));
+		}
+	}
 }

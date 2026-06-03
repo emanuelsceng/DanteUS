@@ -1,10 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "EnemyFactory.h" // Necesario para reconocer el tipo de enemigo (Enum)
+#include "EnemyShop.h" // <--- CAMBIO CLAVE: Ahora incluimos la tienda del libro, no la factoría vieja
 #include "Components/BoxComponent.h"
 #include "EnemySpawner.generated.h"
 
@@ -12,37 +14,32 @@ UCLASS()
 class DANTEUS_API AEnemySpawner : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
+
+public:
 	AEnemySpawner();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-    //  La "zona invisible" que detecta a Dante
-    UPROPERTY(VisibleAnywhere, Category = "Spawner")
-    UBoxComponent* ZonaActivacion;
+	UPROPERTY(VisibleAnywhere, Category = "Spawner")
+	UBoxComponent* ZonaActivacion;
 
-    // Variables configurables en el editor (Nivel 1, Nivel 2, etc.)
-    UPROPERTY(EditAnywhere, Category = "Spawner")
-    ETipoEnemigo TipoA_Spawnear;
+	// Puntero genérico a la interfaz de la tienda
+	UPROPERTY(EditAnywhere, Category = "Spawner | Config")
+	AEnemyShop* TiendaLocal;
 
-    UPROPERTY(EditAnywhere, Category = "Spawner")
-    int32 Cantidad = 3;
-    
+	// El rol que pedirá el spawner
+	UPROPERTY(EditAnywhere, Category = "Spawner | Config")
+	ERolEnemigo RolA_Spawnear;
 
-    // 3. Función que se activa cuando alguien "pisa" la caja
-    UFUNCTION()
-    void AlEntrarEnZona(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-        bool bFromSweep, const FHitResult& SweepResult);
+	UPROPERTY(EditAnywhere, Category = "Spawner | Config")
+	int32 Cantidad = 3;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	UFUNCTION()
+	void AlEntrarEnZona(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+		bool bFromSweep, const FHitResult& SweepResult);
 
 private:
-    bool bYaSeActivo = false;
+	bool bYaSeActivo = false;
 };
