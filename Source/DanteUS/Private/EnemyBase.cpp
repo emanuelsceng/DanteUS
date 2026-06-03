@@ -264,3 +264,10 @@ void AEnemyBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
+
+//pra compilar esta mrd
+void AEnemyBase::JugadorDerrotado()
+{
+    // Implementación base vacía
+    // Los hijos (MiniBoss, etc.) pueden sobrescribir esto
+}

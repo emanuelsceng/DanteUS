@@ -1,32 +1,34 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+﻿// EnemyBase.h
+// PASO 2: EnemyBase se convierte en el "CONTEXTO" del patrón State.
+// Equivalente exacto a OldSchoolSlotMachine.h del libro.
+// En el libro: la máquina de slots guarda punteros a cada estado y delega acciones.
+// Aquí: EnemyBase guarda punteros a cada estado del enemigo y delega el Tick().
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 
-// Incluimos la interfaz que creamos Así EnemyBase conoce el tipo IEstadoEnemigo para declarar sus punteros.
+// Incluimos la interfaz que creamos en el Paso 1.
+// Así EnemyBase conoce el tipo IEstadoEnemigo para declarar sus punteros.
 #include "EstadoEnemigo.h"
+
 #include "EnemyBase.generated.h"
 
-
+// Forward declaration del componente de visión.
+// Le decimos al compilador "esta clase existe" sin incluir su .h completo.
 class UPawnSensingComponent;
-
-
 
 UCLASS()
 class DANTEUS_API AEnemyBase : public ACharacter
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
-	AEnemyBase();
-    // PROPIEDADES DEL ENEMIGO (sin cambios respecto a tu versión original)
-
-   // Función llamable desde Blueprint para saber si el enemigo está muerto.
-   // Reemplaza la comparación con el UENUM que tenían los Animation Blueprints.
-   // BlueprintPure: no necesita nodo de ejecución, devuelve solo un bool.
+    AEnemyBase();
+    // Función llamable desde Blueprint para saber si el enemigo está muerto.
+    // Reemplaza la comparación con el UENUM que tenían los Animation Blueprints.
+    // BlueprintPure: no necesita nodo de ejecución, devuelve solo un bool.
     UFUNCTION(BlueprintPure, Category = "Dante | Estado")
     bool EstasMuerto() const
     {
@@ -35,48 +37,46 @@ public:
         // y los estados no fueron creados con SpawnActor todavía.
         // En ese caso devolvemos false para no activar la animación de muerte prematuramente.
         if (!EstadoMuerto.GetObject()) return false;
+
         // GetObject() devuelve el UObject* del TScriptInterface para comparar punteros.
         // Si EstadoActual apunta al mismo objeto que EstadoMuerto, está muerto.
         return EstadoActual.GetObject() == EstadoMuerto.GetObject();
     }
 
-    /////////
-    // Salud actual del enemigo
+
+    // ─── PROPIEDADES DEL ENEMIGO (sin cambios respecto a tu versión original) ───
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Enemigo")
     float Salud;
 
-    // Salud máxima (Sección 0.1: 20, 75 o 150 HP)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Enemigo")
     float SaludMaxima;
 
-    // Daño que inflige este enemigo (2 puntos para comunes)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Enemigo")
     float DanoAtaque;
-    // Ajuste de altura al morir para evitar que el cadáver traspase el suelo
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combate|Animacion")
     float DesfaseZMuerte = 0.0f;
 
-    // Tiempo que el cadáver se queda en el suelo antes de llamar a Morir()
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combate|Animacion")
     float TiempoDesaparicion = 15.0f;
 
-	// Componente para detectar a Dante
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dante | IA")
     UPawnSensingComponent* SensorVision;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | IA")
     float DistanciaAtaque;
 
-    // Referencia a la animación de ataque
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | IA")
     class UAnimMontage* MontageAtaque;
 
     // ObjetivoActual: referencia al jugador detectado.
     // Es APawn* porque el jugador es un Pawn en Unreal.
     APawn* ObjetivoActual;
+
     FTimerHandle TemporizadorAtaque;
 
-    //PATRÓN STATE: LOS 4 PUNTEROS DE ESTADO 
+    // ─── PATRÓN STATE: LOS 4 PUNTEROS DE ESTADO ────────────────────────────
     // Equivalente exacto al libro:
     // "IState* NoDollarsState;"
     // "IState* NoCoinState;" etc.
@@ -99,14 +99,14 @@ public:
     UPROPERTY()
     TScriptInterface<IEstadoEnemigo> EstadoMuerto;
 
-    // ESTADO ACTUAL
+    // ─── ESTADO ACTUAL ───────────────────────────────────────────────────────
     // Este es el puntero que cambia según la situación del enemigo.
     // Equivalente al libro: "IState* State;"
     // SetEstado() lo cambia, Tick() lo usa para delegar.
     UPROPERTY()
     TScriptInterface<IEstadoEnemigo> EstadoActual;
 
-    // MÉTODOS DEL CONTEXTO 
+    // ─── MÉTODOS DEL CONTEXTO ────────────────────────────────────────────────
 
     // SetEstado(): cambia el estado actual del enemigo.
     // Equivalente al libro: "void SetState(IState* myState);"
@@ -121,32 +121,32 @@ public:
     TScriptInterface<IEstadoEnemigo> GetEstadoAtacando()     const { return EstadoAtacando; }
     TScriptInterface<IEstadoEnemigo> GetEstadoMuerto()       const { return EstadoMuerto; }
 
-    // MÉTODOS DE COMBATE (se mantienen, los usan los estados internamente)
-    //
-    // Función que se activa cuando Dante lo golpea (le quita 5 HP)
-    virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-
-    // Función para manejar la muerte y limpieza de memoria
+    // ─── MÉTODOS DE COMBATE (se mantienen, los usan los estados internamente) ─
+    virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+        class AController* EventInstigator, AActor* DamageCauser) override;
     virtual void Morir();
+    virtual void AtacarJugador();
+    void FinalizarAtaque();
 
-	// Función que se activa cuando el enemigo ve a Dante
     UFUNCTION()
     void AlVerJugador(APawn* JugadorVisto);
 
-    virtual void AtacarJugador();
-    void FinalizarAtaque(); // Reemplaza a ResetearAtaque
+protected:
+    virtual void BeginPlay() override;
 
- protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
     UFUNCTION(BlueprintCallable, Category = "Combate | IA")
     virtual void EjecutarGolpeMelee();
 
- public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+public:
+    //para compilar esta mrd
+    UFUNCTION(BlueprintCallable, Category = "Combate | IA")
+    virtual void JugadorDerrotado();
+    //
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+    virtual void Tick(float DeltaTime) override;
+    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 };
+
+
+

@@ -25,8 +25,8 @@ void AEnemyRanged::BeginPlay()
 }
 
 void AEnemyRanged::RutinaCerebroTactico()
-{
-    if (EstadoActual == EEstadoEnemigo::Muerto) return;
+{   //cambio state Antes EstadoActual == EEstadoEnemigo::Muerto
+    if (EstadoActual.GetObject() == GetEstadoMuerto().GetObject()) return;
 
     ACharacter* Dante = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
     AAIController* ControladorIA = Cast<AAIController>(GetController());

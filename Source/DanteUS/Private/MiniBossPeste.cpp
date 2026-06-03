@@ -76,8 +76,8 @@ void AMiniBossPeste::IniciarPreparacionVomito()
 void AMiniBossPeste::DispararVomitoSecuencial()
 {
     ACharacter* Dante = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-
-    if (Dante && EstadoActual != EEstadoEnemigo::Muerto)
+    //cambio State 1. Antes Dante && EstadoActual != EEstadoEnemigo::Muerto)
+    if (Dante && EstadoActual.GetObject() != GetEstadoMuerto().GetObject())
     {
         FVector DireccionHaciaDante = Dante->GetActorLocation() - GetActorLocation();
         float DistanciaADante = DireccionHaciaDante.Size();
@@ -119,9 +119,9 @@ void AMiniBossPeste::FinalizarRecuperacion()
 }
 
 void AMiniBossPeste::DespertarCerebroBoss()
-{
-    if (EstadoActual != EEstadoEnemigo::Muerto)
+{   //cambio state 2 Antes EstadoActual != EEstadoEnemigo::Muerto)      EstadoActual = EEstadoEnemigo::Persiguiendo;
+    if (EstadoActual.GetObject() != GetEstadoMuerto().GetObject())
     {
-        EstadoActual = EEstadoEnemigo::Persiguiendo;
+        SetEstado(GetEstadoPersiguiendo());
     }
 }

@@ -41,7 +41,8 @@ AEnemigoEscupidor::AEnemigoEscupidor()
 void AEnemigoEscupidor::RutinaCerebroTactico()
 {
     // Regla de oro: Si está muerto o en medio de la animación de grito, apagamos el cerebro para que no se mueva[cite: 2]
-    if (EstadoActual == EEstadoEnemigo::Muerto || EstadoActual == EEstadoEnemigo::Atacando) return;
+    //cambio 1.STate Antes EstadoActual == EEstadoEnemigo::Muerto || EstadoActual == EEstadoEnemigo::Atacando
+    if (EstadoActual.GetObject() == GetEstadoMuerto().GetObject() || EstadoActual.GetObject() == GetEstadoAtacando().GetObject()) return;
 
     // Buscamos a Dante
     ACharacter* Dante = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
@@ -67,7 +68,8 @@ void AEnemigoEscupidor::RutinaCerebroTactico()
         // Frenamos en seco al enemigo[cite: 7]
         ControladorIA->StopMovement();
         // Cambiamos el estado a Atacando para que el cerebro se bloquee (Línea 40)[cite: 2]
-        EstadoActual = EEstadoEnemigo::Atacando;
+        //cambio State 2. Antes  EstadoActual = EEstadoEnemigo::Atacando;
+        SetEstado(GetEstadoAtacando());
         // Iniciamos la secuencia de disparo
         AtacarJugador();
     }
