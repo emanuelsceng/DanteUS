@@ -69,8 +69,9 @@ void AMiniBossGuerra::EjecutarAtaqueEspecial()
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), FX_CirculoAdvertencia, CentroDeExplosion);
 	}
-	// PONEMOS AL JEFE EN RECUPERACIÓN (Inactivo por 2 segundos)
-	EstadoActual = EEstadoEnemigo::Atacando; // Lo forzamos a quedarse en estado de ataque para que el Tick() no lo mueva
+	// PONEMOS AL JEFE EN RECUPERACIÓN (Inactivo por 2 segundos
+	//cambio1(state) Antes EstadoActual = EEstadoEnemigo::Atacando 
+	SetEstado(GetEstadoAtacando()); // Lo forzamos a quedarse en estado de ataque para que el Tick() no lo mueva
 	GetCharacterMovement()->DisableMovement(); // Detenemos sus piernas
 
 	//Programamos la DETONACIÓN para dentro de 2 segundos (TiempoRecuperacion)
@@ -145,13 +146,14 @@ void AMiniBossGuerra::Morir()
 	TArray<AActor*> EnemigosEnElMapa;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemyBase::StaticClass(), EnemigosEnElMapa);
 
-	
+
 	for (AActor* ActorEnemigo : EnemigosEnElMapa)
 	{
 		AEnemyBase* Enemigo = Cast<AEnemyBase>(ActorEnemigo);
 
 		// Añadimos "Enemigo != this" para que el jefe no cometa "suicidio" dentro del bucle
-		if (Enemigo && Enemigo != this && Enemigo->EstadoActual == EEstadoEnemigo::Muerto)
+		//cambio 2(state) Antes EstadoActual == EEstadoEnemigo::Muerto
+		if (Enemigo && Enemigo != this && Enemigo->EstadoActual.GetObject() == GetEstadoMuerto().GetObject())
 		{
 			Enemigo->Destroy();
 		}

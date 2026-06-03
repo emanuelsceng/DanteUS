@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "AtributosCombateInterface.h"
 #include "DanteUSCharacter.generated.h"
+
 
 
 class USpringArmComponent;
@@ -17,7 +19,7 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config = Game)
-class ADanteUSCharacter : public ACharacter
+class ADanteUSCharacter : public ACharacter, public IAtributosCombateInterface
 {
 	GENERATED_BODY()
 
@@ -49,6 +51,11 @@ public:
 	ADanteUSCharacter();
 
 public:
+
+	// Puntero polimórfico: Apuntará a Dante o al Decorador (Escudo) que lo envuelva
+	IAtributosCombateInterface* AtributosActuales;
+
+
 	// ESTADÍSTICAS DE DANTE
 
 	// Salud actual de Dante
@@ -115,6 +122,18 @@ public:
 	// Función que detecta el choque físico
 	UFUNCTION()
 	void AlGolpearEnemigo(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	
+	/////
+	// Implementación obligatoria de la interfaz
+	virtual float CalcularDanioRecibido(float DanioEntrante) override;
+	// Variable para recordar si tenemos el escudo puesto. 
+	// El UPROPERTY() es VITAL para que Unreal borre el escudo de la memoria al desactivarlo (Garbage Collection).
+	UPROPERTY()
+	class UReliquiaEscudo* EscudoActivo;
+
+	// Tu función que ya tenías (no le cambies el nombre)
+	UFUNCTION(BlueprintCallable, Category = "Dante | Reliquias")
+	void ActivarEscudo(float NivelDeProteccion);
 
 protected:
 

@@ -14,6 +14,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "EnemyBase.h"
 #include "Components/BoxComponent.h"
+#include "SistemaJuegoFacade.h"
+#include "ReliquiaEscudo.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -82,6 +84,10 @@ void ADanteUSCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	// Al inicio del juego, Dante no tiene reliquias, así que él calcula su propio daño base
+	AtributosActuales = this;
+
 
 	//  Buscamos automáticamente el facade de UI en el mundo
 	AActor* FachadaEncontrada = UGameplayStatics::GetActorOfClass(GetWorld(), AUIManagerFacade::StaticClass());
@@ -171,8 +177,14 @@ void ADanteUSCharacter::Look(const FInputActionValue& Value)
 float ADanteUSCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	if (bEstaMuerto) return 0.0f;
-	float DamageToApply = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	////////////
+	// 1. EL DECORADOR INTERCEPTA EL DAÑO: 
+	// Antes era DamageAmount directo. Ahora le preguntamos a la Reliquia (o a Dante) cuánto daño pasa realmente.
+	float DanioModificado = AtributosActuales->CalcularDanioRecibido(DamageAmount);
 
+	// 2. APLICAMOS EL DAÑO FILTRADO:
+	// Fíjate que ahora le pasamos 'DanioModificado' al Super en lugar de DamageAmount
+	float DamageToApply = Super::TakeDamage(DanioModificado, DamageEvent, EventInstigator, DamageCauser);
 	// Restamos el daño a la salud actual
 	Salud -= DamageToApply;
 	//
@@ -222,6 +234,29 @@ void ADanteUSCharacter::ProcesarMuerte()
 
 	// Llamamos al evento que dispara la animación en el Blueprint
 	OnDanteDie();
+	//LÓGICA DEL MEGÁFONO A LOS ENEMIGOS
+	// Buscamos a TODOS los enemigos en el nivel
+	TArray<AActor*> EnemigosEnMapa;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemyBase::StaticClass(), EnemigosEnMapa);
+
+	// Le avisamos a cada uno que Dante ya fue derrotado
+	for (AActor* EnemigoActor : EnemigosEnMapa)
+	{
+		AEnemyBase* Enemigo = Cast<AEnemyBase>(EnemigoActor);
+		if (Enemigo)
+		{
+			Enemigo->JugadorDerrotado();
+		}
+	}
+	// Buscamos el facade del sistema de juego para avisarle que Dante fue derrotado (y así centralizar la llamada a UI, Audio, etc)
+	AActor* FachadaActor = UGameplayStatics::GetActorOfClass(GetWorld(), ASistemaJuegoFacade::StaticClass());
+	ASistemaJuegoFacade* Fachada = Cast<ASistemaJuegoFacade>(FachadaActor);
+
+	if (Fachada)
+	{
+		// Centralizamos la llamada. Ocultamos toda la complejidad de la UI y el Audio.
+		Fachada->DanteDerrotado();
+	}
 }
 
 
@@ -284,4 +319,48 @@ void ADanteUSCharacter::Saltar()
 
 	// Si pasa todas las pruebas, permitimos el salto físico de Unreal
 	Jump();
+}
+
+void ADanteUSCharacter::ActivarEscudo(float NivelDeProteccion)
+{
+	// ¿Tenemos el escudo prendido? ¡Entonces toca APAGARLO!
+	if (EscudoActivo != nullptr)
+	{
+		// 1. Dante vuelve a ser el dueño de su propio daño (nos quitamos el envoltorio)
+		this->AtributosActuales = this;
+
+		// 2. Vaciamos la variable. El motor de Unreal se encargará de destruir el escudo viejo.
+		EscudoActivo = nullptr;
+
+		// Mensaje en rojo para avisar que somos vulnerables
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("¡Reliquia Desactivada! Eres vulnerable."));
+		}
+	}
+	else // ¿El escudo está apagado? ¡Entonces toca PRENDERLO!
+	{
+		// 1. Creamos el escudo dinámicamente en la memoria y lo guardamos en nuestra variable
+		EscudoActivo = NewObject<UReliquiaEscudo>(this);
+
+		// 2. Le asignamos la protección
+		EscudoActivo->PorcentajeReduccion = NivelDeProteccion;
+
+		// 3. El escudo "envuelve" a Dante
+		EscudoActivo->InicializarDecorador(this->AtributosActuales);
+
+		// 4. Le decimos a Dante que su nueva defensa frontal es este escudo
+		this->AtributosActuales = EscudoActivo;
+
+		// Mensaje en verde para avisar que estamos protegidos
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("¡Reliquia Activada! Daño bloqueado."));
+		}
+	}
+}
+float ADanteUSCharacter::CalcularDanioRecibido(float DanioEntrante)
+{
+	// Al ser el Dante base (sin decoradores encima), recibe el 100% del daño original
+	return DanioEntrante;
 }

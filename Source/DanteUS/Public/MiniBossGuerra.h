@@ -7,7 +7,7 @@
 #include "MiniBossGuerra.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class DANTEUS_API AMiniBossGuerra : public AEnemyBase
@@ -15,7 +15,7 @@ class DANTEUS_API AMiniBossGuerra : public AEnemyBase
 	GENERATED_BODY()
 
 public:
-	
+
 	AMiniBossGuerra();
 protected:
 	// ATRIBUTOS DE COMBATE (Encapsulamiento)
@@ -52,7 +52,7 @@ protected:
 	// Funciones exclusivas del Mini-Boss
 	UFUNCTION(BlueprintCallable, Category = "Combate | Jefe")
 	void EjecutarAtaqueEspecial();
-	
+
 	//función que ejecutará el daño después de los 2 segundos
 	void DetonarOndaChoque();
 	void FinalizarRecuperacion();

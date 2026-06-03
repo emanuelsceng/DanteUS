@@ -38,7 +38,7 @@ void AMiniBossHambre::BeginPlay()
 {
     Super::BeginPlay();
 
-    
+
     // Buscamos a Dante directamente al iniciar
     // porque AlVerJugador de EnemyBase no funciona con nuestro enum
     APawn* Dante = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
