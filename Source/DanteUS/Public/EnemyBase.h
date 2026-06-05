@@ -76,17 +76,7 @@ public:
 
     FTimerHandle TemporizadorAtaque;
 
-    // ─── PATRÓN STATE: LOS 4 PUNTEROS DE ESTADO ────────────────────────────
-    // Equivalente exacto al libro:
-    // "IState* NoDollarsState;"
-    // "IState* NoCoinState;" etc.
-    //
-    // Cada puntero es de tipo IEstadoEnemigo* (la interfaz del Paso 1).
-    // Esto es polimorfismo: el puntero puede apuntar a CUALQUIER clase
-    // que implemente IEstadoEnemigo (Inactivo, Persiguiendo, Atacando, Muerto).
-    //
-    // UPROPERTY(): necesario para que Unreal gestione la memoria
-    // y no destruya estos objetos inesperadamente (garbage collection).
+    // PATRÓN STATE
     UPROPERTY()
     TScriptInterface<IEstadoEnemigo> EstadoInactivo;
 
@@ -99,23 +89,18 @@ public:
     UPROPERTY()
     TScriptInterface<IEstadoEnemigo> EstadoMuerto;
 
-    // ─── ESTADO ACTUAL ───────────────────────────────────────────────────────
-    // Este es el puntero que cambia según la situación del enemigo.
-    // Equivalente al libro: "IState* State;"
-    // SetEstado() lo cambia, Tick() lo usa para delegar.
+    // ESTADO ACTUAL
     UPROPERTY()
     TScriptInterface<IEstadoEnemigo> EstadoActual;
 
-    // ─── MÉTODOS DEL CONTEXTO ────────────────────────────────────────────────
-
     // SetEstado(): cambia el estado actual del enemigo.
-    // Equivalente al libro: "void SetState(IState* myState);"
-    // Llama a Salir() del estado anterior y a Ingresar() del nuevo.
     void SetEstado(TScriptInterface<IEstadoEnemigo> NuevoEstado);
 
-    // Getters de cada estado: permiten que las clases de estado
-    // puedan pedirle al enemigo "dame el estado Persiguiendo" para transicionar.
-    // Equivalente al libro: "IState* GetNoCoinState();" etc.
+    
+
+
+
+
     TScriptInterface<IEstadoEnemigo> GetEstadoInactivo()     const { return EstadoInactivo; }
     TScriptInterface<IEstadoEnemigo> GetEstadoPersiguiendo() const { return EstadoPersiguiendo; }
     TScriptInterface<IEstadoEnemigo> GetEstadoAtacando()     const { return EstadoAtacando; }

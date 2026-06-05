@@ -22,7 +22,6 @@ void AEnemySpawner::BeginPlay()
 void AEnemySpawner::AlEntrarEnZona(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// Detectamos al Jugador (Dante) mediante tu Tag original "Player"
 	if (!bYaSeActivo && OtherActor && OtherActor->ActorHasTag("Player"))
 	{
 		if (TiendaLocal)
@@ -31,10 +30,10 @@ void AEnemySpawner::AlEntrarEnZona(UPrimitiveComponent* OverlappedComp, AActor* 
 
 			for (int32 i = 0; i < Cantidad; i++)
 			{
-				// Tu fórmula original de posicionamiento en fila
+				
 				FVector SpawnPos = GetActorLocation() + FVector(i * 150.0f, 0.0f, 50.0f);
 
-				// LLAMADA AL FACTORY METHOD: Le pedimos el rol a la tienda instanciada
+				// LLAMADA AL FACTORY METHOD
 				TiendaLocal->SpawnEnemy(RolA_Spawnear, SpawnPos, GetActorRotation());
 			}
 

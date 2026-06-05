@@ -6,7 +6,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "EnemyShop.h" // <--- CAMBIO CLAVE: Ahora incluimos la tienda del libro, no la factoría vieja
+#include "EnemyShop.h" 
 #include "Components/BoxComponent.h"
 #include "EnemySpawner.generated.h"
 

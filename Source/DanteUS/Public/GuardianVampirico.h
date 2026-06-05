@@ -1,3 +1,5 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 // Dante: El Último Sello - Nivel 3
 // Enemigo común vampírico - Guardián Vampírico
 // Hereda de AEnemyBase, por lo que ya tiene:
@@ -10,37 +12,36 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EnemyBase.h"
-#include "Animation/AnimMontage.h"
+#include "EnemyBase.h" // Clase base de todos los enemigos
+#include "Animation/AnimInstance.h"
 #include "GuardianVampirico.generated.h"
 
 UCLASS()
 class DANTEUS_API AGuardianVampirico : public AEnemyBase
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
 public:
-    AGuardianVampirico();
+	// Constructor: ajustamos los valores del Guardián según el documento
+	AGuardianVampirico();
 
-    // Regenera +4 HP por golpe SOLO si el golpe conecta fisicamente
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante|Enemigo|Vampirico")
-    float RegeneracionPorGolpe = 4.0f;
+	// --- MECÁNICA VAMPÍRICA MEJORADA ---
+	// Según el documento: "+4 HP por golpe" (el doble que Siervo y Acechador)
+	// El Guardián es el más peligroso si no se elimina rápido
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante|Enemigo|Vampirico")
+	float RegeneracionPorGolpe = 4.0f;
 
-    // Montaje de animacion de muerte
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante|Enemigo|Animaciones")
-    UAnimMontage* MontajeMuerte;
-
-    // Montaje de animacion de ataque
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante|Enemigo|Animaciones")
-    UAnimMontage* MontajeAtaqueGuardian;
+	// En la sección pública:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante|Enemigo|Animaciones")
+	UAnimMontage* MontajeMuerte;
 
 protected:
-    virtual void BeginPlay() override;
+	// Se ejecuta cuando el enemigo aparece en el nivel
+	virtual void BeginPlay() override;
 
 public:
-    virtual void Tick(float DeltaTime) override;
-
-    // Sobrescribimos EjecutarGolpeMelee para curar SOLO si el golpe conecta
-    virtual void EjecutarGolpeMelee() override;
-
+	virtual void Tick(float DeltaTime) override;
+	// Sobrescribimos el ataque para agregar la regeneración vampírica mejorada
+	virtual void AtacarJugador() override;
+	virtual void Morir() override;
 };

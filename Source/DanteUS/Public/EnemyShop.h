@@ -11,10 +11,22 @@
 UENUM(BlueprintType)
 enum class ERolEnemigo : uint8
 {
-	EnemigoComun1       UMETA(DisplayName = "Siervo"),
-	EnemigoComun2      UMETA(DisplayName = "Guardian"),
-	EnemigoComun3    UMETA(DisplayName = "Acechador"),
-	MiniBossHambre        UMETA(DisplayName = "MiniBosshambre")
+	EnemigoGComun1         UMETA(DisplayName = "Ceniza"),
+	GuerraMiniBoss       UMETA(DisplayName = "Comandante"),
+
+
+	EnemigoPComun1       UMETA(DisplayName = "Escupidor"),
+	EnemigoPComun2	   UMETA(DisplayName = "Pustulento"),
+	PesteMiniBoss        UMETA(DisplayName = "MiniBossPeste"),
+
+	EnemigoHComun1       UMETA(DisplayName = "Siervo"),
+	EnemigoHComun2      UMETA(DisplayName = "Guardian"),
+	EnemigoHComun3    UMETA(DisplayName = "Acechador"),
+	MiniBossHambre        UMETA(DisplayName = "MiniBosshambre"),
+
+
+	EnemigoMComun1      UMETA(DisplayName = "Fantasma"),
+	MuerteMiniBoss       UMETA(DisplayName = "Recolector"),
 };
 
 UCLASS() 
@@ -25,8 +37,7 @@ class DANTEUS_API AEnemyShop : public AActor
 public:
 	AEnemyShop(const FObjectInitializer& ObjectInitializer);
 
-	// EL FACTORY METHOD VIRTUAL PURO (= 0)
-	// Las subclases por nivel (Nivel 3, Nivel 1) implementarán obligatoriamente este método.
+		// Las subclases por nivel implementarán obligatoriamente este método.
 	virtual AEnemyBase* SpawnEnemy(ERolEnemigo Rol, FVector Posicion, FRotator Rotacion) 
 	PURE_VIRTUAL(AEnemyShop::SpawnEnemy, return nullptr;);
 };
