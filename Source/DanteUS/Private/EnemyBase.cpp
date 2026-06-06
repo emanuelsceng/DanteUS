@@ -92,7 +92,7 @@ void AEnemyBase::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-0    if (EstadoActual)
+    if (EstadoActual)
     {
         EstadoActual->Ejecutar(DeltaTime);
     }
