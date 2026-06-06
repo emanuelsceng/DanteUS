@@ -1,10 +1,7 @@
-﻿
-
+﻿#pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 
-// Incluimos la interfaz del Paso 1.
-// Sin esto, el compilador no sabe qué es IEstadoEnemigo.
 #include "EstadoEnemigo.h"
 
 #include "EstadoInactivo.generated.h"
@@ -18,7 +15,7 @@ public:
     AEstadoInactivo();
 
 private:
- 
+    // Puntero al enemigo dueño de este estado
     UPROPERTY()
     class AEnemyBase* Enemigo;
 
@@ -28,8 +25,8 @@ protected:
 public:
     virtual void Tick(float DeltaTime) override;
 
+    //Implementación de la interfaz IEstadoEnemigo
     virtual void Ingresar() override;
-
     virtual void Ejecutar(float DeltaTime) override;
 
     virtual void Salir() override;
