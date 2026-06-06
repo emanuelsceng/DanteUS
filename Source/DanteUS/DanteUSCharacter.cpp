@@ -84,10 +84,10 @@ void ADanteUSCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-
-	// Al inicio del juego, Dante no tiene reliquias, así que él calcula su propio daño base
+// Al inicio del juego, Dante no tiene reliquias, así que él calcula su propio daño base
 	AtributosActuales = this;
 
+	
 
 	//  Buscamos automáticamente el facade de UI en el mundo
 	AActor* FachadaEncontrada = UGameplayStatics::GetActorOfClass(GetWorld(), AUIManagerFacade::StaticClass());
