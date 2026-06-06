@@ -1,10 +1,4 @@
-﻿// EstadoAtacando.h
-// Este estado representa al enemigo cuando está en rango y ejecutando el ataque.
-// Equivalente a CoinInsertedState.h del libro — el estado donde ocurre
-// la acción principal (PullLever/Payout → aquí: golpear a Dante).
-// Mientras este estado está activo, el enemigo NO persigue ni hace otra cosa.
-// Solo espera a que termine la animación de ataque (FinalizarAtaque lo maneja).
-
+﻿
 #pragma once
 
 #include "CoreMinimal.h"

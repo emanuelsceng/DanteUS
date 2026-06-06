@@ -1,50 +1,42 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 // Dante: El Último Sello - Nivel 3
 // Implementación del Siervo Vampírico
 
 #include "SiervoVampirico.h"
-#include "Kismet/GameplayStatics.h" // Para aplicar daño a Dante
 
 ASiervoVampirico::ASiervoVampirico()
 {
-    // --- AJUSTAMOS LOS VALORES HEREDADOS DE EnemyBase ---
-
-    // El Siervo tiene 20 HP (igual que enemigo común)
     SaludMaxima = 20.0f;
     Salud = SaludMaxima;
-
-    // Hace 5 de daño por golpe 
     DanoAtaque = 5.0f;
-
-    // Distancia a la que puede golpear a Dante (cuerpo a cuerpo)
     DistanciaAtaque = 120.0f;
-
-    // Cuánta vida recupera por cada golpe que da (mecánica vampírica)
     RegeneracionPorGolpe = 2.0f;
 }
 
 void ASiervoVampirico::BeginPlay()
 {
-    // Llamamos al BeginPlay del padre (EnemyBase)
-    // Esto activa el sensor de visión y vincula AlVerJugador
     Super::BeginPlay();
 }
 
-void ASiervoVampirico::AtacarJugador()
+void ASiervoVampirico::EjecutarGolpeMelee()
 {
-    // Primero ejecutamos el ataque normal heredado de EnemyBase
-    // Esto aplica el daño a Dante y activa el cooldown de 1.5 segundos
-    Super::AtacarJugador();
+    // El padre verifica la distancia y aplica el daño
+    Super::EjecutarGolpeMelee();
 
-    // --- MECÁNICA VAMPÍRICA ---
-    // Después de golpear, el Siervo se cura a sí mismo
-    // FMath::Clamp evita que la salud supere el máximo
-    Salud = FMath::Clamp(Salud + RegeneracionPorGolpe, 0.0f, SaludMaxima);
-
-    if (GEngine)
+    // Solo nos curamos si Dante sigue en rango (golpe conectado)
+    if (ObjetivoActual)
     {
-        GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, TEXT("¡Siervo Vampírico mordió a Dante y regeneró vida!"));
+        float DistanciaADante = FVector::Dist(GetActorLocation(), ObjetivoActual->GetActorLocation());
+
+        if (DistanciaADante <= (DistanciaAtaque + 50.0f))
+        {
+            // Golpe conectado - curacion vampirica
+            Salud = FMath::Clamp(Salud + RegeneracionPorGolpe, 0.0f, SaludMaxima);
+
+            if (GEngine)
+            {
+                GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red,
+                    TEXT("Siervo Vampirico mordio a Dante y regenero vida!"));
+            }
+        }
     }
 }
