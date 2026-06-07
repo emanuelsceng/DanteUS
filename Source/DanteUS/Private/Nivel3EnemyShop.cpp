@@ -2,6 +2,7 @@
 
 
 #include "Nivel3EnemyShop.h"
+#include "EnemyBase.h"
 
 // Implementamos el constructor usando la macro e inicializador nativos de Unreal
 ANivel3EnemyShop::ANivel3EnemyShop(const FObjectInitializer& ObjectInitializer)
@@ -10,7 +11,7 @@ ANivel3EnemyShop::ANivel3EnemyShop(const FObjectInitializer& ObjectInitializer)
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-AEnemyBase* ANivel3EnemyShop::SpawnEnemy(ERolEnemigo Rol, FVector Posicion, FRotator Rotacion)
+AEnemyBase* ANivel3EnemyShop::SpawnEnemy(ERolEnemigo Rol, FVector Posicion, FRotator Rotacion, AActor* InOwner)
 {
 	UWorld* Mundo = GetWorld();
 	if (!Mundo) return nullptr;
@@ -18,16 +19,22 @@ AEnemyBase* ANivel3EnemyShop::SpawnEnemy(ERolEnemigo Rol, FVector Posicion, FRot
 	if (CatalogoVampiros.Contains(Rol))
 	{
 		TSubclassOf<AEnemyBase> ClaseA_Spawnear = CatalogoVampiros[Rol];
-
 		if (ClaseA_Spawnear)
 		{
 			FActorSpawnParameters Params;
 			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-			return Mundo->SpawnActor<AEnemyBase>(ClaseA_Spawnear, Posicion, Rotacion, Params);
+			// 1. Spawneamos al enemigo
+			AEnemyBase* NuevoEnemigo = Mundo->SpawnActor<AEnemyBase>(ClaseA_Spawnear, Posicion, Rotacion, Params);
+
+			// 2. FORZAMOS EL OWNER EXPLÍCITAMENTE (El truco salvavidas)
+			if (NuevoEnemigo && InOwner)
+			{
+				NuevoEnemigo->SetOwner(InOwner);
+			}
+
+			return NuevoEnemigo;
 		}
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("Nivel3EnemyShop: El rol solicitado no tiene un Blueprint asignado."));
 	return nullptr;
 }

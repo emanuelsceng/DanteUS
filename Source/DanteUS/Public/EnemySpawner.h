@@ -1,14 +1,21 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+
 
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "EnemyShop.h" 
+#include "GameFramework/Actor.h" 
+#include "EnemyShop.h"
 #include "Components/BoxComponent.h"
+#include "ArenaManager.h"
 #include "EnemySpawner.generated.h"
+
+
+//para el delegate
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnArenaLimpia);
+
+class AEnemyShop; // Forward declaration de seguridad
 
 UCLASS()
 class DANTEUS_API AEnemySpawner : public AActor
@@ -42,4 +49,16 @@ protected:
 
 private:
 	bool bYaSeActivo = false;
+	//anadi esto, contador y delegate
+	int32 EnemigosVivos = 0;
+
+public:
+	UPROPERTY(BlueprintAssignable, Category = "Spawner | Observer")
+		FOnArenaLimpia OnArenaLimpia;
+
+	// Referencia al ArenaManager — asignada desde el editor
+	UPROPERTY(EditAnywhere, Category = "Spawner | Config")
+	class AArenaManager* MiArenaManager;
+
+	void NotificarEnemyMuerto();
 };
