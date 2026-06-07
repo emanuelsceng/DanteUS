@@ -77,7 +77,8 @@ ADanteUSCharacter::ADanteUSCharacter()
 	EspadaHitbox->SetCollisionResponseToAllChannels(ECR_Ignore);
 	EspadaHitbox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // Solo reacciona a enemigos
 
-
+	// Inicializamos el control del escudo listo para su primer uso
+    bPuedoActivarEscudo = true;
 }
 
 void ADanteUSCharacter::BeginPlay()
@@ -323,42 +324,94 @@ void ADanteUSCharacter::Saltar()
 
 void ADanteUSCharacter::ActivarEscudo(float NivelDeProteccion)
 {
-	// ¿Tenemos el escudo prendido? ¡Entonces toca APAGARLO!
+	// REGLA DE GUARDA: Si el escudo está en cooldown, bloqueamos la ejecución por completo
+	if (!bPuedoActivarEscudo)
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Orange, TEXT("Reliquia en Cooldown. Espera a que se recargue."));
+		}
+		return;
+	}
+
+	// Seguridad: Si por alguna razón asíncrona ya existía un objeto escudo, restablecemos la base
 	if (EscudoActivo != nullptr)
 	{
-		// 1. Dante vuelve a ser el dueño de su propio daño (nos quitamos el envoltorio)
 		this->AtributosActuales = this;
-
-		// 2. Vaciamos la variable. El motor de Unreal se encargará de destruir el escudo viejo.
 		EscudoActivo = nullptr;
-
-		// Mensaje en rojo para avisar que somos vulnerables
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("¡Reliquia Desactivada! Eres vulnerable."));
-		}
 	}
-	else // ¿El escudo está apagado? ¡Entonces toca PRENDERLO!
-	{
-		// 1. Creamos el escudo dinámicamente en la memoria y lo guardamos en nuestra variable
-		EscudoActivo = NewObject<UReliquiaEscudo>(this);
 
-		// 2. Le asignamos la protección
+	// 1. INSTANCIACIÓN DEL DECORADOR
+	EscudoActivo = NewObject<UReliquiaEscudo>(this);
+	if (EscudoActivo)
+	{
 		EscudoActivo->PorcentajeReduccion = NivelDeProteccion;
 
-		// 3. El escudo "envuelve" a Dante
+		// El escudo envuelve la capa actual de atributos
 		EscudoActivo->InicializarDecorador(this->AtributosActuales);
 
-		// 4. Le decimos a Dante que su nueva defensa frontal es este escudo
+		// Dante delega la recepción de daño al escudo
 		this->AtributosActuales = EscudoActivo;
 
-		// Mensaje en verde para avisar que estamos protegidos
+		// Consumimos la disponibilidad inmediatamente
+		bPuedoActivarEscudo = false;
+
 		if (GEngine)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("¡Reliquia Activada! Daño bloqueado."));
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, TEXT("¡Reliquia Activada! Invulnerabilidad activa por 5 segundos."));
+		}
+
+		// 2. TEMPORIZADOR DE DURACIÓN (5 Segundos)
+		// Pasados 5.0f segundos, se ejecutará de forma única (false) la función para remover el escudo
+		GetWorldTimerManager().SetTimer(
+			Temporizador_DuracionEscudo,
+			this,
+			&ADanteUSCharacter::DesactivarEscudoPorTiempo,
+			5.0f,
+			false
+		);
+
+		// 3. TEMPORIZADOR DE ENFRIAMIENTO (3 Minutos = 180 Segundos)
+		// Independientemente de cuándo se apague el escudo, el cooldown corre desde el momento de activación
+		GetWorldTimerManager().SetTimer(
+			Temporizador_CooldownEscudo,
+			this,
+			&ADanteUSCharacter::ResetearCooldownEscudo,
+			180.0f,
+			false
+		);
+	}
+}
+
+void ADanteUSCharacter::DesactivarEscudoPorTiempo()
+{
+	if (EscudoActivo != nullptr)
+	{
+		// Rompemos el envoltorio: Dante vuelve a ser el receptor directo de su daño
+		this->AtributosActuales = this;
+
+		// Apuntamos a null para que el Garbage Collector de Unreal limpie el objeto UObject obsoleto
+		EscudoActivo = nullptr;
+
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Red, TEXT("¡El poder de la Reliquia se ha agotado! Eres vulnerable de nuevo."));
 		}
 	}
 }
+
+void ADanteUSCharacter::ResetearCooldownEscudo()
+{
+	// Habilitamos nuevamente el booleano de activación
+	bPuedoActivarEscudo = true;
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("¡Reliquia Escudo cargada y lista para usar de nuevo (Tecla R)!"));
+	}
+}
+
+
 float ADanteUSCharacter::CalcularDanioRecibido(float DanioEntrante)
 {
 	// Al ser el Dante base (sin decoradores encima), recibe el 100% del daño original
