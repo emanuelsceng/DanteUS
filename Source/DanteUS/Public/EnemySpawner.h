@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+
 
 // Fill out your copyright notice in the Description page of Project Settings.
 
@@ -8,7 +8,9 @@
 #include "GameFramework/Actor.h" 
 #include "EnemyShop.h"
 #include "Components/BoxComponent.h"
+#include "ArenaManager.h"
 #include "EnemySpawner.generated.h"
+
 
 //para el delegate
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnArenaLimpia);
@@ -52,7 +54,11 @@ private:
 
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Spawner | Observer")
-	FOnArenaLimpia OnArenaLimpia;
+		FOnArenaLimpia OnArenaLimpia;
+
+	// Referencia al ArenaManager — asignada desde el editor
+	UPROPERTY(EditAnywhere, Category = "Spawner | Config")
+	class AArenaManager* MiArenaManager;
 
 	void NotificarEnemyMuerto();
 };
