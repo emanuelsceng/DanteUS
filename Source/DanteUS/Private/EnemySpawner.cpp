@@ -2,6 +2,8 @@
 
 
 #include "EnemySpawner.h"
+#include "EnemyShop.h"
+#include "EnemyBase.h"    // <-- Añádelo aquí para la lógica de conteo de enemigos
 
 AEnemySpawner::AEnemySpawner()
 {
@@ -36,12 +38,30 @@ void AEnemySpawner::AlEntrarEnZona(UPrimitiveComponent* OverlappedComp, AActor* 
 				// LLAMADA AL FACTORY METHOD
 				TiendaLocal->SpawnEnemy(RolA_Spawnear, SpawnPos, GetActorRotation());
 			}
-
-			this->Destroy();
+			EnemigosVivos = Cantidad; //D
+			//this->Destroy(); quitamos el destroy para poder llevar la cuenta, D
 		}
 		else
 		{
 			UE_LOG(LogTemp, Error, TEXT("EnemySpawner: ¡Peligro! No has asignado la TiendaLocal en este Spawner del mapa."));
 		}
+	}
+}
+
+//agrega la función NotificarEnemyMuerto, Domingo
+void AEnemySpawner::NotificarEnemyMuerto()
+{
+	EnemigosVivos = FMath::Max(0, EnemigosVivos - 1);
+
+	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,
+		FString::Printf(TEXT("Spawner: Enemigos restantes: %d"), EnemigosVivos));
+
+	if (EnemigosVivos == 0)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green,
+			TEXT("Spawner: Arena limpia"));
+
+		OnArenaLimpia.Broadcast();
+		Destroy();
 	}
 }

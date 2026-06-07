@@ -2,6 +2,7 @@
 
 
 #include "Nivel3EnemyShop.h"
+#include "EnemyBase.h"
 
 // Implementamos el constructor usando la macro e inicializador nativos de Unreal
 ANivel3EnemyShop::ANivel3EnemyShop(const FObjectInitializer& ObjectInitializer)
@@ -10,7 +11,8 @@ ANivel3EnemyShop::ANivel3EnemyShop(const FObjectInitializer& ObjectInitializer)
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-AEnemyBase* ANivel3EnemyShop::SpawnEnemy(ERolEnemigo Rol, FVector Posicion, FRotator Rotacion)
+AEnemyBase* ANivel3EnemyShop::SpawnEnemy(ERolEnemigo Rol, FVector Posicion, FRotator Rotacion,
+	AActor* InOwner)
 {
 	UWorld* Mundo = GetWorld();
 	if (!Mundo) return nullptr;
@@ -23,7 +25,7 @@ AEnemyBase* ANivel3EnemyShop::SpawnEnemy(ERolEnemigo Rol, FVector Posicion, FRot
 		{
 			FActorSpawnParameters Params;
 			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
+			Params.Owner = Owner;
 			return Mundo->SpawnActor<AEnemyBase>(ClaseA_Spawnear, Posicion, Rotacion, Params);
 		}
 	}
