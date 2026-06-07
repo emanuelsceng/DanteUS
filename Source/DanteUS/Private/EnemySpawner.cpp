@@ -36,7 +36,7 @@ void AEnemySpawner::AlEntrarEnZona(UPrimitiveComponent* OverlappedComp, AActor* 
 				FVector SpawnPos = GetActorLocation() + FVector(i * 150.0f, 0.0f, 50.0f);
 
 				// LLAMADA AL FACTORY METHOD
-				TiendaLocal->SpawnEnemy(RolA_Spawnear, SpawnPos, GetActorRotation());
+				TiendaLocal->SpawnEnemy(RolA_Spawnear, SpawnPos, GetActorRotation(), this);//pasa this como Owner al spawnear
 			}
 			EnemigosVivos = Cantidad; //D
 			//this->Destroy(); quitamos el destroy para poder llevar la cuenta, D
@@ -59,9 +59,18 @@ void AEnemySpawner::NotificarEnemyMuerto()
 	if (EnemigosVivos == 0)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green,
-			TEXT("Spawner: Arena limpia"));
+			TEXT("Spawner: Arena limpia — avisando al ArenaManager"));
 
-		OnArenaLimpia.Broadcast();
+		if (MiArenaManager)
+		{
+			MiArenaManager->NotificarOleadaLimpia();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error,
+				TEXT("EnemySpawner: No tiene ArenaManager asignado en el editor."));
+		}
+
 		Destroy();
 	}
 }

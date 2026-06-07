@@ -10,8 +10,7 @@ ANivel4EnemyShop::ANivel4EnemyShop(const FObjectInitializer& ObjectInitializer)
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-AEnemyBase* ANivel4EnemyShop::SpawnEnemy(ERolEnemigo Rol, FVector Posicion, FRotator Rotacion,
-	AActor* InOwner)
+AEnemyBase* ANivel4EnemyShop::SpawnEnemy(ERolEnemigo Rol, FVector Posicion, FRotator Rotacion, AActor* InOwner)
 {
 	UWorld* Mundo = GetWorld();
 	if (!Mundo) return nullptr;
@@ -23,8 +22,17 @@ AEnemyBase* ANivel4EnemyShop::SpawnEnemy(ERolEnemigo Rol, FVector Posicion, FRot
 		{
 			FActorSpawnParameters Params;
 			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-			Params.Owner = Owner;
-			return Mundo->SpawnActor<AEnemyBase>(ClaseA_Spawnear, Posicion, Rotacion, Params);
+
+			// 1. Spawneamos al enemigo
+			AEnemyBase* NuevoEnemigo = Mundo->SpawnActor<AEnemyBase>(ClaseA_Spawnear, Posicion, Rotacion, Params);
+
+			// 2. FORZAMOS EL OWNER EXPLÍCITAMENTE (El truco salvavidas)
+			if (NuevoEnemigo && InOwner)
+			{
+				NuevoEnemigo->SetOwner(InOwner);
+			}
+
+			return NuevoEnemigo;
 		}
 	}
 	return nullptr;

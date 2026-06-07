@@ -47,6 +47,10 @@ class ADanteUSCharacter : public ACharacter, public IAtributosCombateInterface
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
+	/** Dodge Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* DodgeAction;
+
 public:
 	ADanteUSCharacter();
 
@@ -135,6 +139,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dante | Reliquias")
 	void ActivarEscudo(float NivelDeProteccion);
 
+	//Roll
+	// Estado de la voltereta
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dante | Estado")
+	bool bEstaEsquivando = false;
+
+	// Montaje de animacion de dodge
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dante | Combate")
+	UAnimMontage* MontageDodge;
+
+	// Funcion principal del dodge
+	UFUNCTION(BlueprintCallable, Category = "Dante | Combate")
+	void Esquivar();
+
+	// Termina el dodge y restaura el estado
+	UFUNCTION(BlueprintCallable, Category = "Dante | Combate")
+	void FinalizarEsquiva();
+
 protected:
 
 	/** Called for movement input */
@@ -179,4 +200,23 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+
+	protected:
+		// --- CONTROL DE TIEMPO DEL ESCUDO (RELIQUIA) ---
+
+		// Almacena el estado de disponibilidad del escudo
+		bool bPuedoActivarEscudo;
+
+		// Manejador para controlar los 5 segundos de duración
+		FTimerHandle Temporizador_DuracionEscudo;
+
+		// Manejador para controlar los 3 minutos (180 segundos) de cooldown
+		FTimerHandle Temporizador_CooldownEscudo;
+
+		// Función que el motor llamará automáticamente a los 5 segundos para retirar el escudo
+		void DesactivarEscudoPorTiempo();
+
+		// Función que el motor llamará automáticamente a los 3 minutos para permitir un nuevo uso
+		void ResetearCooldownEscudo();
 };

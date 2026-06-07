@@ -76,6 +76,8 @@ ADanteUSCharacter::ADanteUSCharacter()
 	EspadaHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision); // Empieza apagada
 	EspadaHitbox->SetCollisionResponseToAllChannels(ECR_Ignore);
 	EspadaHitbox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // Solo reacciona a enemigos
+	// Inicializamos el control del escudo listo para su primer uso
+	bPuedoActivarEscudo = true;
 
 	// Inicializamos el control del escudo listo para su primer uso
     bPuedoActivarEscudo = true;
@@ -131,6 +133,9 @@ void ADanteUSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ADanteUSCharacter::Look);
+
+		// VOLTERETA (DODGE)
+		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Started, this, &ADanteUSCharacter::Esquivar);
 	}
 	else
 	{
@@ -397,6 +402,54 @@ void ADanteUSCharacter::DesactivarEscudoPorTiempo()
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Red, TEXT("¡El poder de la Reliquia se ha agotado! Eres vulnerable de nuevo."));
 		}
+
+		// 2. TEMPORIZADOR DE DURACIÓN (5 Segundos)
+		// Pasados 5.0f segundos, se ejecutará de forma única (false) la función para remover el escudo
+		GetWorldTimerManager().SetTimer(
+			Temporizador_DuracionEscudo,
+			this,
+			&ADanteUSCharacter::DesactivarEscudoPorTiempo,
+			5.0f,
+			false
+		);
+
+		// 3. TEMPORIZADOR DE ENFRIAMIENTO (3 Minutos = 180 Segundos)
+		// Independientemente de cuándo se apague el escudo, el cooldown corre desde el momento de activación
+		GetWorldTimerManager().SetTimer(
+			Temporizador_CooldownEscudo,
+			this,
+			&ADanteUSCharacter::ResetearCooldownEscudo,
+			90.0f,
+			false
+		);
+	}
+}
+
+void ADanteUSCharacter::DesactivarEscudoPorTiempo()
+{
+	if (EscudoActivo != nullptr)
+	{
+		// Rompemos el envoltorio: Dante vuelve a ser el receptor directo de su daño
+		this->AtributosActuales = this;
+
+		// Apuntamos a null para que el Garbage Collector de Unreal limpie el objeto UObject obsoleto
+		EscudoActivo = nullptr;
+
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Red, TEXT("¡El poder de la Reliquia se ha agotado! Eres vulnerable de nuevo."));
+		}
+	}
+}
+
+void ADanteUSCharacter::ResetearCooldownEscudo()
+{
+	// Habilitamos nuevamente el booleano de activación
+	bPuedoActivarEscudo = true;
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("¡Reliquia Escudo cargada y lista para usar de nuevo (Tecla R)!"));
 	}
 }
 
@@ -416,4 +469,69 @@ float ADanteUSCharacter::CalcularDanioRecibido(float DanioEntrante)
 {
 	// Al ser el Dante base (sin decoradores encima), recibe el 100% del daño original
 	return DanioEntrante;
+}
+
+//Roll
+void ADanteUSCharacter::Esquivar()
+{
+	// MENSAJE DE PRUEBA :
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("¡PRESIONASTE SHIFT!"));
+	// Si está muerto, atacando o ya esquivando, bloqueamos
+	if (bEstaMuerto || bEstaAtacando || bEstaEsquivando) return;
+
+	// Activamos el estado de esquiva
+	bEstaEsquivando = true;
+
+	// --- I-FRAMES: Dante es invulnerable durante la esquiva ---
+	// Desactivamos la colision de la capsula para que los golpes pasen
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+
+	// --- IMPULSO EN LA DIRECCION DEL MOVIMIENTO ---
+	// Si Dante se esta moviendo, el dodge va en esa direccion
+	// Si esta quieto, el dodge va hacia atras (como Dark Souls)
+	FVector DireccionDodge;
+
+	if (GetCharacterMovement()->Velocity.SizeSquared() > 10.0f)
+	{
+		// Se esta moviendo: dodge en la direccion del movimiento
+		DireccionDodge = GetCharacterMovement()->Velocity.GetSafeNormal();
+	}
+	else
+	{
+		// Quieto: dodge hacia atras
+		DireccionDodge = -GetActorForwardVector();
+	}
+
+	// Aplicamos el impulso
+	LaunchCharacter(DireccionDodge * 800.0f, true, false);
+
+	// Reproducimos la animacion
+	if (MontageDodge)
+	{
+		PlayAnimMontage(MontageDodge);
+	}
+
+	// Timer para terminar el dodge despues de 0.6 segundos
+	FTimerHandle TimerDodge;
+	GetWorldTimerManager().SetTimer(
+		TimerDodge,
+		this,
+		&ADanteUSCharacter::FinalizarEsquiva,
+		0.6f,
+		false
+	);
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Dante esquivo!"));
+	}
+}
+
+void ADanteUSCharacter::FinalizarEsquiva()
+{
+	// Restauramos la colision normal
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+
+	// Terminamos el estado de esquiva
+	bEstaEsquivando = false;
 }
