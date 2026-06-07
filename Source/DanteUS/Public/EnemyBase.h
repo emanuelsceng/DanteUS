@@ -2,8 +2,7 @@
 // PASO 2: EnemyBase se convierte en el "CONTEXTO" del patrón State.
 // Equivalente exacto a OldSchoolSlotMachine.h del libro.
 // En el libro: la máquina de slots guarda punteros a cada estado y delega acciones.
-// Aquí: EnemyBase guarda punteros a cada estado del enemigo y delega el Tick().
-
+// Aquí: EnemyBase gu
 #pragma once
 
 #include "CoreMinimal.h"
@@ -18,6 +17,7 @@
 // Forward declaration del componente de visión.
 // Le decimos al compilador "esta clase existe" sin incluir su .h completo.
 class UPawnSensingComponent;
+class AEnemySpawner; // en ves de poner enemyspawner.h D
 
 UCLASS()
 class DANTEUS_API AEnemyBase : public ACharacter

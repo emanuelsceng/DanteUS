@@ -11,6 +11,7 @@
 #include "EstadoAtacando.h"
 #include "EstadoMuerto.h"
 
+#include "EnemySpawner.h" //D
 #include "Perception/PawnSensingComponent.h"
 #include "AIController.h"
 #include "Kismet/GameplayStatics.h"
@@ -147,7 +148,15 @@ float AEnemyBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 
 // MORIR — destruye el actor después del TiempoDesaparicion
 void AEnemyBase::Morir()
-{
+{   //anadi esto, D
+    if (AActor* Dueno = GetOwner())
+    {
+        if (AEnemySpawner* MiSpawner = Cast<AEnemySpawner>(Dueno))
+        {
+            MiSpawner->NotificarEnemyMuerto();
+        }
+    }
+
     Destroy();
 }
 

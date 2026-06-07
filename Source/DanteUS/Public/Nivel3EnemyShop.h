@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "EnemyShop.h" 
+#include "EnemyBase.h"
 #include "Nivel3EnemyShop.generated.h"
 
 UCLASS()
@@ -16,7 +17,8 @@ public:
 	ANivel3EnemyShop(const FObjectInitializer& ObjectInitializer);
 
 	// Aseguramos que la firma coincida al 100% con la clase padre
-	virtual AEnemyBase* SpawnEnemy(ERolEnemigo Rol, FVector Posicion, FRotator Rotacion) override;
+	virtual AEnemyBase* SpawnEnemy(ERolEnemigo Rol, FVector Posicion, FRotator Rotacion,
+		AActor* InOwner = nullptr) override;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Configuracion de Nivel (Hambre)")

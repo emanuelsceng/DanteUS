@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "EnemyBase.h" // Conectamos con tu base real que tiene la salud, el sensor, etc.
+
 #include "EnemyShop.generated.h"
 
 // El spawner pedirá un rol abstracto, nunca el nombre de un enemigo específico.
@@ -29,6 +29,8 @@ enum class ERolEnemigo : uint8
 	MuerteMiniBoss       UMETA(DisplayName = "Recolector"),
 };
 
+class AEnemyBase; //AÑADIDO: Forward declaration para el tipo de retorno (sin include enemybase.h)
+
 UCLASS() 
 class DANTEUS_API AEnemyShop : public AActor
 {
@@ -38,6 +40,8 @@ public:
 	AEnemyShop(const FObjectInitializer& ObjectInitializer);
 
 		// Las subclases por nivel implementarán obligatoriamente este método.
-	virtual AEnemyBase* SpawnEnemy(ERolEnemigo Rol, FVector Posicion, FRotator Rotacion) 
+	    //anadi AActor* Owner = nullptr, Domingo
+	virtual AEnemyBase* SpawnEnemy(ERolEnemigo Rol, FVector Posicion, FRotator Rotacion,
+		AActor* InOwner = nullptr) 
 	PURE_VIRTUAL(AEnemyShop::SpawnEnemy, return nullptr;);
 };
