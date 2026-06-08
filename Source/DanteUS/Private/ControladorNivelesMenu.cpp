@@ -8,6 +8,7 @@
 #include "ConstructorNivel4.h"
 #include "DirectorNivel.h"
 #include "NivelDante.h"
+#include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 
 void AControladorNivelesMenu::InicializarSubsistema()
@@ -57,8 +58,18 @@ void AControladorNivelesMenu::EjecutarComandoMenu(const FString& Comando)
         if (NivelFinal)
         {
             NivelFinal->ReportarCaracteristicasNivel();
-            // TODO: aquí usarás UGameplayStatics::OpenLevel(this, NivelFinal->GetNombreMapa())
-            // cuando tengas los mapas creados
+
+            FName NombreMapa = NivelFinal->GetNombreMapa();
+            if (!NombreMapa.IsNone())
+            {
+                GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan,
+                    FString::Printf(TEXT("Niveles: Cargando mapa -> %s"), *NombreMapa.ToString()));
+                UGameplayStatics::OpenLevel(this, NombreMapa, true);
+            }
+            else
+            {
+                UE_LOG(LogTemp, Error, TEXT("ControladorNivelesMenu: NombreMapa vacio en NivelDante."));
+            }
         }
     }
 }

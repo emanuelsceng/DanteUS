@@ -25,10 +25,9 @@ void AConstructorNivel1::BeginPlay()
 void AConstructorNivel1::ConstruirConfiguracionBase()
 {
     if (!Nivel) { UE_LOG(LogTemp, Error, TEXT("ConstruirConfiguracionBase: Nivel NULL")); return; }
-    Nivel->SetNombreNivel(TEXT("Nivel 1 - Las Catacumbas"));
-    Nivel->SetConfiguracionBase(TEXT("Mapa oscuro, iluminacion de antorchas"));
-    // TODO: reemplaza "Nivel1_Enemigos" con el nombre real de tu mapa en el Content Browser
-    Nivel->SetNombreMapa(FName("Nivel1_Enemigos"));
+    Nivel->SetNombreNivel(TEXT("Nivel 1 - La Guerra"));
+    Nivel->SetConfiguracionBase(TEXT("Ciudad en ruinas, incendios activos, lluvia de ceniza"));
+    Nivel->SetNombreMapa(FName("Nivel1_Guerra")); // <-- corregido
     GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green,
         TEXT("Builder Nivel1: Config base construida."));
 }
@@ -36,8 +35,7 @@ void AConstructorNivel1::ConstruirConfiguracionBase()
 void AConstructorNivel1::ConstruirEnemigosComunes()
 {
     if (!Nivel) return;
-    Nivel->AgregarEnemigoComun(TEXT("Esqueleto Guerrero"));
-    Nivel->AgregarEnemigoComun(TEXT("Espectro Menor"));
+    Nivel->AgregarEnemigoComun(TEXT("EnemigoCeniza"));
     GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green,
         TEXT("Builder Nivel1: Enemigos comunes configurados."));
 }
@@ -45,7 +43,7 @@ void AConstructorNivel1::ConstruirEnemigosComunes()
 void AConstructorNivel1::ConstruirMiniBoss()
 {
     if (!Nivel) return;
-    Nivel->SetDatosMiniBoss(TEXT("Guardian de las Catacumbas"));
+    Nivel->SetDatosMiniBoss(TEXT("MiniBossGuerra"));
     GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow,
         TEXT("Builder Nivel1: MiniBoss configurado."));
 }
@@ -53,11 +51,10 @@ void AConstructorNivel1::ConstruirMiniBoss()
 void AConstructorNivel1::ConstruirBoss()
 {
     if (!Nivel) return;
-    Nivel->SetDatosBoss(TEXT("Senor de la Oscuridad"));
+    Nivel->SetDatosBoss(TEXT("BossGuerra"));
     GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,
         TEXT("Builder Nivel1: Boss configurado."));
 }
-
 ANivelDante* AConstructorNivel1::ObtenerNivel()
 {
     return Nivel;
