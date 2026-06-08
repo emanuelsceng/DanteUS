@@ -14,9 +14,13 @@ class DANTEUS_API AControladorAudioMenu : public ASubsistemaMenu
 {
 	GENERATED_BODY()
 public:
+	AControladorAudioMenu();
 	virtual void InicializarSubsistema() override;
 	virtual void EjecutarComandoMenu(const FString& Comando) override;
 	virtual void ApagarSubsistema() override;
 	virtual FString ObtenerNombreSubsistema() override;
-	
+	// Variable para guardar la pista de audio
+private:
+	UPROPERTY()
+	class USoundBase* MusicaMenuFondo;
 };
