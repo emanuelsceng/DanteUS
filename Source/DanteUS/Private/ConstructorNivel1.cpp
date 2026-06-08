@@ -27,7 +27,7 @@ void AConstructorNivel1::ConstruirConfiguracionBase()
     if (!Nivel) { UE_LOG(LogTemp, Error, TEXT("ConstruirConfiguracionBase: Nivel NULL")); return; }
     Nivel->SetNombreNivel(TEXT("Nivel 1 - La Guerra"));
     Nivel->SetConfiguracionBase(TEXT("Ciudad en ruinas, incendios activos, lluvia de ceniza"));
-    Nivel->SetNombreMapa(FName("Nivel1_Guerra")); // <-- corregido
+    Nivel->SetNombreMapa(FName("Nivel1_ArenaComunes")); // <-- corregido
     GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green,
         TEXT("Builder Nivel1: Config base construida."));
 }
