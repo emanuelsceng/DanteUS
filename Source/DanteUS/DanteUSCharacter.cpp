@@ -425,23 +425,6 @@ void ADanteUSCharacter::DesactivarEscudoPorTiempo()
 	}
 }
 
-void ADanteUSCharacter::DesactivarEscudoPorTiempo()
-{
-	if (EscudoActivo != nullptr)
-	{
-		// Rompemos el envoltorio: Dante vuelve a ser el receptor directo de su daño
-		this->AtributosActuales = this;
-
-		// Apuntamos a null para que el Garbage Collector de Unreal limpie el objeto UObject obsoleto
-		EscudoActivo = nullptr;
-
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Red, TEXT("¡El poder de la Reliquia se ha agotado! Eres vulnerable de nuevo."));
-		}
-	}
-}
-
 void ADanteUSCharacter::ResetearCooldownEscudo()
 {
 	// Habilitamos nuevamente el booleano de activación
@@ -452,18 +435,6 @@ void ADanteUSCharacter::ResetearCooldownEscudo()
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("¡Reliquia Escudo cargada y lista para usar de nuevo (Tecla R)!"));
 	}
 }
-
-void ADanteUSCharacter::ResetearCooldownEscudo()
-{
-	// Habilitamos nuevamente el booleano de activación
-	bPuedoActivarEscudo = true;
-
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("¡Reliquia Escudo cargada y lista para usar de nuevo (Tecla R)!"));
-	}
-}
-
 
 float ADanteUSCharacter::CalcularDanioRecibido(float DanioEntrante)
 {

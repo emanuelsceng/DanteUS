@@ -201,22 +201,4 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
-
-	protected:
-		// --- CONTROL DE TIEMPO DEL ESCUDO (RELIQUIA) ---
-
-		// Almacena el estado de disponibilidad del escudo
-		bool bPuedoActivarEscudo;
-
-		// Manejador para controlar los 5 segundos de duración
-		FTimerHandle Temporizador_DuracionEscudo;
-
-		// Manejador para controlar los 3 minutos (180 segundos) de cooldown
-		FTimerHandle Temporizador_CooldownEscudo;
-
-		// Función que el motor llamará automáticamente a los 5 segundos para retirar el escudo
-		void DesactivarEscudoPorTiempo();
-
-		// Función que el motor llamará automáticamente a los 3 minutos para permitir un nuevo uso
-		void ResetearCooldownEscudo();
 };
