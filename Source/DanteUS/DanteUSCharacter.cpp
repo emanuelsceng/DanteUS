@@ -79,7 +79,8 @@ ADanteUSCharacter::ADanteUSCharacter()
 	// Inicializamos el control del escudo listo para su primer uso
 	bPuedoActivarEscudo = true;
 
-
+	// Inicializamos el control del escudo listo para su primer uso
+    bPuedoActivarEscudo = true;
 }
 
 void ADanteUSCharacter::BeginPlay()
@@ -381,7 +382,7 @@ void ADanteUSCharacter::ActivarEscudo(float NivelDeProteccion)
 			Temporizador_CooldownEscudo,
 			this,
 			&ADanteUSCharacter::ResetearCooldownEscudo,
-			90.0f,
+			180.0f,
 			false
 		);
 	}
@@ -401,6 +402,26 @@ void ADanteUSCharacter::DesactivarEscudoPorTiempo()
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Red, TEXT("¡El poder de la Reliquia se ha agotado! Eres vulnerable de nuevo."));
 		}
+
+		// 2. TEMPORIZADOR DE DURACIÓN (5 Segundos)
+		// Pasados 5.0f segundos, se ejecutará de forma única (false) la función para remover el escudo
+		GetWorldTimerManager().SetTimer(
+			Temporizador_DuracionEscudo,
+			this,
+			&ADanteUSCharacter::DesactivarEscudoPorTiempo,
+			5.0f,
+			false
+		);
+
+		// 3. TEMPORIZADOR DE ENFRIAMIENTO (3 Minutos = 180 Segundos)
+		// Independientemente de cuándo se apague el escudo, el cooldown corre desde el momento de activación
+		GetWorldTimerManager().SetTimer(
+			Temporizador_CooldownEscudo,
+			this,
+			&ADanteUSCharacter::ResetearCooldownEscudo,
+			90.0f,
+			false
+		);
 	}
 }
 
@@ -414,6 +435,7 @@ void ADanteUSCharacter::ResetearCooldownEscudo()
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("¡Reliquia Escudo cargada y lista para usar de nuevo (Tecla R)!"));
 	}
 }
+
 float ADanteUSCharacter::CalcularDanioRecibido(float DanioEntrante)
 {
 	// Al ser el Dante base (sin decoradores encima), recibe el 100% del daño original

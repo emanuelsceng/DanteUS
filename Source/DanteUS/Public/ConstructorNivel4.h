@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "ConstructorNivel.h"
 #include "ConstructorNivel4.generated.h"
 
 UCLASS()
-class DANTEUS_API AConstructorNivel4 : public AActor
+class DANTEUS_API AConstructorNivel4 : public AActor, public IConstructorNivel
 {
 	GENERATED_BODY()
 	
@@ -18,9 +19,15 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+private:
+	UPROPERTY()
+	class ANivelDante* Nivel;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+public:
+	virtual void ConstruirConfiguracionBase() override;
+	virtual void ConstruirEnemigosComunes()    override;
+	virtual void ConstruirMiniBoss()           override;
+	virtual void ConstruirBoss()               override;
+	virtual ANivelDante* ObtenerNivel()        override;
 
 };
