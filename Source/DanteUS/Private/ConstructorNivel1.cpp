@@ -18,7 +18,7 @@ void AConstructorNivel1::BeginPlay()
 {
 	Super::BeginPlay();
 	// Crea el producto vacío
-	Nivel = GetWorld()->SpawnActor<ANivelDante>(ANivelDante::StaticClass());
+	Nivel = GetWorld()->SpawnActor<ANivelDante>(ANivelDante::StaticClass());//crea la plantilla vacia
 	Nivel->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);	
 }
 
@@ -27,7 +27,7 @@ void AConstructorNivel1::ConstruirConfiguracionBase()
     if (!Nivel) { UE_LOG(LogTemp, Error, TEXT("ConstruirConfiguracionBase: Nivel NULL")); return; }
     Nivel->SetNombreNivel(TEXT("Nivel 1 - La Guerra"));
     Nivel->SetConfiguracionBase(TEXT("Ciudad en ruinas, incendios activos, lluvia de ceniza"));
-    Nivel->SetNombreMapa(FName("Nivel1_ArenaComunes")); // <-- corregido
+    Nivel->SetNombreMapa(FName("Nivel1_ArenaComunes"));
     GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green,
         TEXT("Builder Nivel1: Config base construida."));
 }

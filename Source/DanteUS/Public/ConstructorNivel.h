@@ -28,7 +28,7 @@ public:
     virtual void ConstruirMiniBoss() = 0;
     virtual void ConstruirBoss() = 0;
 
-    // Retorna el producto construido — equivalente a GetLodging()
+    // Retorna el producto construido 
     virtual class ANivelDante* ObtenerNivel() = 0;
 public:
 };

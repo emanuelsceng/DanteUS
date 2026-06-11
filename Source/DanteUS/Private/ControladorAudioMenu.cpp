@@ -11,7 +11,7 @@ AControladorAudioMenu::AControladorAudioMenu()
 	PrimaryActorTick.bCanEverTick = false;
 
 	// 1. CARGAMOS EL AUDIO DESDE EL DISCO 
-	static ConstructorHelpers::FObjectFinder<USoundBase> SonidoFondo(TEXT("/Script/Engine.SoundWave'/Game/MapsLvl/MapaMenuPrincipal/Taurus-Demon-Dark-Souls-Soundtrack-04.Taurus-Demon-Dark-Souls-Soundtrack-04'"));
+	static ConstructorHelpers::FObjectFinder<USoundBase> SonidoFondo(TEXT("/Script/Engine.SoundWave'/Game/MapsLvl/MapaMenuPrincipal/Vordt-of-the-Boreal-Valley.Vordt-of-the-Boreal-Valley'"));
 
 	if (SonidoFondo.Succeeded())
 	{
@@ -31,7 +31,7 @@ void AControladorAudioMenu::EjecutarComandoMenu(const FString& Comando)
 	{
 		if (MusicaMenuFondo)
 		{
-			// Reproducimos la música en 2D (Ideal para menús sin posición 3D)
+			// Reproducimos la música en 2D 
 			UGameplayStatics::PlaySound2D(this, MusicaMenuFondo);
 
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, TEXT("Audio: Reproduciendo pista principal."));

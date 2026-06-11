@@ -51,7 +51,7 @@ void AMenuPrincipalFacade::InicializarMenuInicio()
 void AMenuPrincipalFacade::PresionaronBotonPlay()
 {
 	ListaTareas.Empty();
-	ListaTareas.Add("Cargar_Secuencia_Completa");
+	ListaTareas.Add("Cargar_Secuencia_Completa");// va al controlador niveles Menu
 
 	DespacharTareas(ListaSubsistemas, ListaTareas);
 }
@@ -69,7 +69,7 @@ void AMenuPrincipalFacade::PresionaronBotonCargarNivel(int NumeroNivel)
 }
 
 
-// EL BUCLE DEL PATRÓN: Copiado idéntico a la función PerformTasks de la página 142 del libro
+// EL BUCLE DEL PATRÓN: Copiado idéntico a la función PerformTasks
 void AMenuPrincipalFacade::DespacharTareas(TArray<ASubsistemaMenu*> MisSubsistemas, TArray<FString> MisTareas)
 {
 	for (ASubsistemaMenu* Subsistema : MisSubsistemas)

@@ -17,14 +17,14 @@ public:
 	AMenuPrincipalFacade();
 
 private:
-	// REQUERIMIENTO DEL INGENIERO: Punteros de la clase abstracta base
-	// La lista polimórfica que guarda a los oficiales/trabajadores del menú, idéntico a la pág 138 del libro
+	// Punteros de la clase abstracta base
+	// La lista polimórfica que guarda a los oficiales/trabajadores del menú
 	TArray<ASubsistemaMenu*> ListaSubsistemas;
 
-	// La lista de tareas basada en Strings, tal cual lo hace el libro
+	// La lista de tareas basada en Strings, 
 	TArray<FString> ListaTareas;
 
-	// Método privado de despacho masivo mediante bucles anidados (Pág 142 del libro)
+	// Método privado de despacho masivo mediante bucles anidados 
 	void DespacharTareas(TArray<ASubsistemaMenu*> MisSubsistemas, TArray<FString> MisTareas);
 
 protected:

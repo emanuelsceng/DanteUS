@@ -50,7 +50,7 @@ void AControladorNivelesMenu::EjecutarComandoMenu(const FString& Comando)
 
     if (ConstructorElegido)
     {
-        // Inyectamos el builder concreto en el director — igual que el libro
+        // Inyectamos el builder concreto en el director
         Director->SetConstructorNivel(ConstructorElegido);
         Director->ConstruirNivelCompleto();
 
